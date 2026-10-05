@@ -1,90 +1,114 @@
-# StockIA — Web Application (Frontend, Angular)
+# StockIA — Frontend Web Application
 
-Frontend de la Web Application de **StockIA** (DataBite Corp — equipo DataBit, 1ASI0729), construido en Angular 18
-standalone, siguiendo la misma arquitectura DDD por Bounded Context que `qullqa-webapp`
-(`upc-pre-202610-1asi0730-17953-flowbit`), adaptada a los User Stories y al modelo de dominio de StockIA
-(Capítulo III y Capítulo IV del informe).
+Web Application de StockIA para el equipo de un restaurante: inventario, recetas, ventas, predicción de demanda,
+alertas, recomendaciones, equipo y planes.
 
-**Este repo es SOLO frontend.** No incluye backend real: por defecto, todas las peticiones HTTP van a la mock
-API desplegada en Render — **https://stockia-mock-api.onrender.com/api/v1** (repo
-[`stockia-mock-api`](../mock-api), `json-server`). También existe una fake API embebida en el propio navegador
-(`angular-in-memory-web-api`, ver `src/app/fake-api/in-memory-data.service.ts`) para correr sin conexión;
-actívala con `useFakeApi: true` en `src/environments/environment.ts`.
+## Technology Stack
 
-## Arquitectura (DDD por Bounded Context)
+- Vue 3 (Composition API con `<script setup>`)
+- Vite
+- PrimeVue 4 (tema Aura con la paleta de StockIA) + PrimeFlex + PrimeIcons
+- Pinia (stores de la capa de aplicación)
+- Vue Router (rutas con carga diferida y guardas por sesión y rol)
+- vue-i18n (inglés por defecto, español)
+- Axios
 
-```
-src/app/
-├── shared/presentation/shell/        # Layout (sidebar + topbar)
-├── iam/                               # User & Access Management
-│   ├── domain/                        # User, UserRole
-│   ├── application/                   # AuthService (sesión, signals)
-│   ├── infrastructure/                # IamApiService, guards
-│   └── presentation/                  # sign-in, sign-up, roles-list
-├── product-inventory/                 # Inventory & Recipe Management
-│   ├── domain/                        # InventoryItem (Aggregate Root), Recipe
-│   ├── application/                   # InventoryService
-│   ├── infrastructure/                # InventoryApiService
-│   └── presentation/                  # inventory-list, recipe-list
-├── demand-forecasting/                # Demand Forecasting
-├── alerts/                            # Alerts & Recommendations
-├── subscription/                      # Subscription & Billing
-├── dashboard/                         # Dashboard & Analytics
-└── fake-api/                          # InMemoryDataService (fake API)
-```
+## Prerequisites
 
-Cada contexto separa **domain** (clases planas, sin Angular ni HTTP), **application** (servicios con estado
-reactivo vía `signal()`, equivalentes a las stores Pinia de Qullqa), **infrastructure** (el único lugar que
-conoce `HttpClient`) y **presentation** (componentes standalone).
+- Node.js 20.19 o superior (LTS recomendado)
+- npm
 
-## Funcionalidades implementadas (User Stories del Capítulo III)
-
-| US | Funcionalidad | Pantalla |
-|---|---|---|
-| US29 / US30 | Registro e inicio de sesión | `/auth/sign-up`, `/auth/sign-in` |
-| US19 | Gestionar inventario (alta/baja/edición) | `/app/inventory` |
-| US20 | Recetas vinculadas al inventario con descuento automático | `/app/recipes` (botón "Simular venta") |
-| US21 | Dashboard operativo con alertas y métricas | `/app/dashboard` |
-| US22 | Vida útil de insumos (catálogo interno, sin API externa) | `/app/inventory` (campo "Vida útil") |
-| US23 | Roles y permisos (Administrador / Empleado) | `/app/roles` |
-| US24 | Predicción de demanda con IA | `/app/forecast` |
-| US25 | Recomendaciones automáticas de menú/compras | `/app/recommendations` |
-| US26 / US28 | Alertas de stock e insumos por WhatsApp/correo | `/app/alerts` |
-| US31 | Planes y suscripción (Stripe/PayPal simulado) | `/app/plans` |
-
-No se tocó nada de backend real ni de infraestructura de despliegue del software — solo frontend y fake API, tal
-como se pidió.
-
-## Correr en local
+## Quick Start
 
 ```bash
 npm install
-npm start      # http://localhost:4200 — habla con https://stockia-mock-api.onrender.com por defecto
+npm run dev
 ```
 
-Nota: el plan gratuito de Render "duerme" la mock API tras ~15 min sin tráfico; el primer request tras dormir
-puede tardar unos segundos en responder mientras despierta.
+Abre la URL que imprime Vite (normalmente `http://localhost:5173`).
 
-Credenciales de prueba (ya precargadas en el formulario de login):
-- **Administrador:** `admin@databitecorp.com` / `stockia123`
-- **Empleado:** `empleado@databitecorp.com` / `stockia123` (usar "Iniciar sesión" manualmente con estos datos)
+## Available Scripts
 
-## Conectar el backend real más adelante
+- `npm run dev`: servidor de desarrollo.
+- `npm run build`: build de producción en `dist/`.
+- `npm run preview`: sirve el build de producción en local.
 
-1. En `src/app/app.config.ts`, quita el bloque `...(environment.useFakeApi ? [...] : [])` (o pon
-   `useFakeApi: false` en `src/environments/environment.prod.ts`).
-2. Cambia `apiBaseUrl` en `src/environments/environment*.ts` a la URL del backend real.
-3. Ningún componente ni servicio de aplicación cambia: solo hablan con las clases `*ApiService` de la capa de
-   infraestructura, que son las únicas que conocen la URL.
+## Environment Variables
 
-## Build de producción
+La URL de la API se lee de las variables de Vite (`import.meta.env`):
+
+| Variable | Descripción |
+| :--- | :--- |
+| `VITE_STOCKIA_API_URL` | URL base de la API (`https://stockia-mock-api.onrender.com/api/v1`) |
+| `VITE_USERS_ENDPOINT_PATH` | `/users` |
+| `VITE_INVENTORY_ITEMS_ENDPOINT_PATH` | `/inventoryItems` |
+| `VITE_RECIPES_ENDPOINT_PATH` | `/recipes` |
+| `VITE_SALES_ENDPOINT_PATH` | `/sales` |
+| `VITE_DEMAND_FORECASTS_ENDPOINT_PATH` | `/demandForecasts` |
+| `VITE_ALERTS_ENDPOINT_PATH` | `/alerts` |
+| `VITE_RECOMMENDATIONS_ENDPOINT_PATH` | `/recommendations` |
+| `VITE_PLANS_ENDPOINT_PATH` | `/plans` |
+| `VITE_SUBSCRIPTIONS_ENDPOINT_PATH` | `/subscriptions` |
+
+`.env.development` se usa con `npm run dev` y `.env.production` con `npm run build`. Para apuntar a la mock API
+en tu máquina sin tocar esos archivos, crea `.env.development.local` (no se sube al repositorio):
 
 ```bash
-npm run build
+VITE_STOCKIA_API_URL="http://localhost:3000/api/v1"
 ```
 
-Genera los archivos estáticos en `dist/stockia-webapp/browser/`.
+Cuando el RESTful API en ASP.NET Core esté desplegado, solo cambia `VITE_STOCKIA_API_URL`.
 
-## Despliegue en Vercel
+## Project Structure
 
-Ver `DEPLOY-VERCEL.md` en la raíz del proyecto para el paso a paso.
+```text
+src/
+  iam/                    # User & Access Management
+  product-inventory/      # Inventory & Recipe Management
+  sales-order/            # Sales & Order Management
+  demand-forecasting/     # Demand Forecasting
+  alerts/                 # Alerts & Recommendations
+  subscription/           # Subscription & Billing
+  dashboard/              # Dashboard & Analytics (solo presentación)
+  shared/
+    domain/model/         # BusinessRuleError
+    infrastructure/       # BaseApi (Axios) y BaseEndpoint (CRUD)
+    presentation/         # layout, language switcher, form field, page header, tema
+  locales/                # en.json, es.json
+  i18n.js
+  router.js
+  main.js
+  app.vue
+```
+
+Cada Bounded Context tiene sus capas:
+
+- `domain/model/`: entidades y enums (`*.entity.js`), sin dependencias de Vue ni de HTTP.
+- `application/`: store de Pinia (`*.store.js`) con los casos de uso y las reglas que coordinan varias entidades.
+- `infrastructure/`: cliente de la API (`*-api.js`, extiende `BaseApi`) y assemblers (`*.assembler.js`) que
+  convierten recursos en entidades y viceversa.
+- `presentation/`: vistas (`views/`) y componentes (`components/`). No llaman a la API: usan el store.
+
+Un Bounded Context solo usa a otro a través de su store. Por ejemplo, `sales.store.js` valida el stock con
+`inventory.store.js` antes de confirmar la venta y, después, le pide descontar los insumos de la receta.
+
+## Conventions
+
+- Archivos en kebab-case con sufijo de tipo: `inventory-item.entity.js`, `inventory.store.js`,
+  `inventory-api.js`, `inventory-item.assembler.js`, `inventory-list.vue`.
+- Componentes de PrimeVue registrados con prefijo `pv-` (`<pv-button>`, `<pv-data-table>`).
+- Textos de la interfaz siempre con `t('...')`; las claves viven en `src/locales/en.json` y `es.json`.
+- Los errores de negocio se lanzan como `BusinessRuleError(code, params)` y la vista los traduce con `t`.
+
+## Internationalization
+
+- Configuración: `src/i18n.js` (inglés por defecto; el idioma elegido se guarda en el navegador).
+- Diccionarios: `src/locales/en.json`, `src/locales/es.json`.
+- `app.vue` actualiza el atributo `lang` del documento al cambiar de idioma.
+
+## Accessibility
+
+- Enlace "Skip to main content", landmarks (`nav`, `main`, `aside`, `footer`) y un solo `h1` por vista.
+- Cada campo tiene `label`; las validaciones usan `aria-invalid` y `aria-describedby`.
+- Los botones solo con ícono tienen `aria-label`; los estados se muestran con texto además del color.
+- Colores con contraste de al menos 4.5:1 (WCAG 2.1 AA).
