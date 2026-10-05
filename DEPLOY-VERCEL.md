@@ -3,32 +3,28 @@
 La Web Application es un sitio estático: `npm run build` genera `dist/` y Vercel lo publica. No necesita
 variables secretas; la URL de la API está en `.env.production`.
 
-## Proyecto existente (`stockia-platform`)
+## Crear el proyecto en Vercel
 
-Si el proyecto de Vercel ya estaba conectado a este repositorio con el preset de Angular, revisa en
-**Settings → Build and Deployment**:
+1. En Vercel: **Add New… → Project** y elige el repositorio `stockia-webapp`.
+2. Vercel detecta Vite. Deja estos valores (ya están en `vercel.json`) y presiona **Deploy**:
 
 | Opción | Valor |
 | :--- | :--- |
 | Framework Preset | Vite |
-| Root Directory | `webapp` |
+| Root Directory | `./` (raíz del repositorio) |
 | Build Command | `npm run build` |
 | Output Directory | `dist` |
 | Install Command | `npm install` |
 
-`vercel.json` ya declara el framework, el build, la salida y el rewrite a `index.html`, que evita el 404 al
-recargar una ruta como `/app/inventory`.
+`vercel.json` también define el rewrite a `index.html`, que evita el 404 al recargar una ruta como
+`/app/inventory`.
 
-## Proyecto nuevo
+Si prefieres reutilizar el proyecto `stockia-platform` (que hoy publica la versión en Angular), conéctalo a este
+repositorio en **Settings → Git**, cambia el **Framework Preset** a Vite y deja **Root Directory** vacío.
 
-1. En Vercel: **Add New… → Project** y elige el repositorio.
-2. En **Root Directory** selecciona `webapp`.
-3. Vercel detecta Vite; deja los valores de la tabla anterior y presiona **Deploy**.
-
-Con Vercel CLI:
+Con Vercel CLI, desde la raíz del repositorio:
 
 ```bash
-cd webapp
 npm install -g vercel
 vercel          # preview
 vercel --prod   # producción

@@ -3,6 +3,13 @@
 Web Application de StockIA para el equipo de un restaurante: inventario, recetas, ventas, predicción de demanda,
 alertas, recomendaciones, equipo y planes.
 
+- Producción: se despliega en Vercel (ver [`DEPLOY-VERCEL.md`](./DEPLOY-VERCEL.md)).
+- API: mientras se construye el RESTful API, consume la API simulada con json-server
+  [`stockia-mock-api`](https://github.com/Jesusho22/stockia-mock-api), desplegada en Render.
+
+Credenciales de prueba: `admin@databitecorp.com` / `stockia123` (Administrador) y
+`empleado@databitecorp.com` / `stockia123` (Empleado).
+
 ## Technology Stack
 
 - Vue 3 (Composition API con `<script setup>`)
@@ -51,7 +58,8 @@ La URL de la API se lee de las variables de Vite (`import.meta.env`):
 | `VITE_SUBSCRIPTIONS_ENDPOINT_PATH` | `/subscriptions` |
 
 `.env.development` se usa con `npm run dev` y `.env.production` con `npm run build`. Para apuntar a la mock API
-en tu máquina sin tocar esos archivos, crea `.env.development.local` (no se sube al repositorio):
+en tu máquina (`npm start` en `stockia-mock-api`) sin tocar esos archivos, crea `.env.development.local` (no se
+sube al repositorio):
 
 ```bash
 VITE_STOCKIA_API_URL="http://localhost:3000/api/v1"
