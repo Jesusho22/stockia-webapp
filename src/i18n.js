@@ -2,25 +2,11 @@ import { createI18n } from 'vue-i18n';
 import en from './locales/en.json';
 import es from './locales/es.json';
 
-/** Key used to remember the language chosen by the user in this browser. */
-export const LOCALE_STORAGE_KEY = 'stockia.locale';
-
 /** Locales supported by the Web Application. English is the default one. */
 export const SUPPORTED_LOCALES = ['en', 'es'];
 
-/**
- * Reads the language previously chosen by the user, falling back to English.
- *
- * @returns {string}
- */
-function initialLocale() {
-  try {
-    const saved = localStorage.getItem(LOCALE_STORAGE_KEY);
-    return SUPPORTED_LOCALES.includes(saved) ? saved : 'en';
-  } catch {
-    return 'en';
-  }
-}
+/** Language the app always starts in. */
+export const DEFAULT_LOCALE = 'en';
 
 const numberFormats = {
   en: {
@@ -50,12 +36,15 @@ const datetimeFormats = {
 
 /**
  * Shared internationalization service used across presentation modules.
- * Base language: English (en). Alternative language: Latin American Spanish (es).
+ *
+ * @remarks
+ * The app always opens in English (en). The user can switch to Latin American
+ * Spanish (es) from the header; the choice lasts until the page is reloaded.
  */
 const i18n = createI18n({
   legacy: false,
-  locale: initialLocale(),
-  fallbackLocale: 'en',
+  locale: DEFAULT_LOCALE,
+  fallbackLocale: DEFAULT_LOCALE,
   messages: { en, es },
   numberFormats,
   datetimeFormats,

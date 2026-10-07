@@ -132,3 +132,83 @@ p { margin: 0 0 .75rem; color: var(--color-muted); }
 /* Text buttons with the danger severity: darker red for a 4.5:1 contrast. */
 body .p-button.p-button-danger.p-button-text,
 body .p-button.p-button-danger.p-button-outlined { color: var(--color-danger); }
+
+/* Mandatory fields */
+.required-mark { color: var(--color-danger); font-weight: 700; }
+.form-error { display: flex; align-items: center; gap: .3rem; }
+
+/* Settings cards (Account settings, Settings menu) */
+.settings-card { display: flex; flex-direction: column; }
+.settings-card-header { display: flex; gap: .85rem; align-items: flex-start; margin-bottom: 1rem; }
+.settings-card-header h2 { font-size: 1.1rem; margin-bottom: .2rem; }
+.settings-card-header p { margin: 0; font-size: .88rem; }
+.settings-icon {
+  flex-shrink: 0; width: 2.6rem; height: 2.6rem; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: #fdf3ee; color: var(--color-accent-strong); font-size: 1.1rem;
+}
+.data-list { margin: 0 0 .75rem; display: flex; flex-direction: column; gap: .6rem; }
+.data-list > div { display: flex; justify-content: space-between; gap: 1rem; padding-bottom: .55rem; border-bottom: 1px dashed var(--color-border); flex-wrap: wrap; }
+.data-list dt { color: var(--color-muted); font-size: .88rem; }
+.data-list dd { margin: 0; font-weight: 500; text-align: right; }
+
+/* Confirmation dialog (delete supply, delete recipe, void sale, ...) */
+.stockia-confirm.p-dialog { border-radius: 18px; overflow: hidden; border: none; box-shadow: 0 24px 60px rgba(20, 48, 31, .28); }
+.stockia-confirm .p-dialog-header { justify-content: center; padding-top: 1.5rem; padding-bottom: .25rem; }
+.stockia-confirm .p-dialog-title { font-size: 1.2rem; color: var(--color-primary-dark); text-align: center; flex: 1; }
+.stockia-confirm .p-dialog-footer { justify-content: center; gap: .75rem; padding-bottom: 1.5rem; flex-wrap: wrap; }
+.stockia-confirm .p-dialog-footer .p-button { min-width: 8.5rem; }
+.confirm-body { display: flex; flex-direction: column; align-items: center; text-align: center; width: 100%; padding-top: .25rem; }
+.confirm-icon {
+  width: 4.25rem; height: 4.25rem; border-radius: 50%; margin-bottom: 1rem;
+  display: inline-flex; align-items: center; justify-content: center; font-size: 1.7rem;
+  background: var(--color-danger-bg); color: var(--color-danger);
+  box-shadow: 0 0 0 8px rgba(176, 50, 36, .08);
+  animation: confirm-pop .25s ease-out;
+}
+.confirm-icon.is-warn { background: var(--color-warning-bg); color: var(--color-warning); box-shadow: 0 0 0 8px rgba(138, 101, 8, .08); }
+.confirm-message { color: var(--color-text); font-size: .98rem; margin-bottom: .75rem; }
+.confirm-item {
+  display: inline-flex; align-items: center; gap: .5rem; max-width: 100%;
+  padding: .5rem .9rem; border-radius: 999px; margin-bottom: .75rem;
+  background: var(--color-bg); border: 1px solid var(--color-border); color: var(--color-primary-dark);
+  word-break: break-word;
+}
+.confirm-detail { font-size: .82rem; color: var(--color-danger); margin: 0; }
+@keyframes confirm-pop { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+/* "Sale not processed" dialog (no stock / expired supply) */
+.sale-blocked-dialog.p-dialog { border-radius: 18px; overflow: hidden; border: none; box-shadow: 0 24px 60px rgba(20, 48, 31, .3); }
+.sale-blocked-dialog .p-dialog-header { justify-content: center; padding-top: 1.5rem; padding-bottom: .25rem; }
+.sale-blocked-dialog .p-dialog-title { font-size: 1.25rem; color: var(--color-danger); text-align: center; flex: 1; }
+.sale-blocked-dialog .p-dialog-footer { justify-content: center; gap: .75rem; flex-wrap: wrap; padding-bottom: 1.5rem; }
+.blocked-body { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.blocked-icon {
+  width: 4.5rem; height: 4.5rem; border-radius: 50%; margin-bottom: 1rem;
+  display: inline-flex; align-items: center; justify-content: center; font-size: 1.9rem;
+  background: var(--color-danger-bg); color: var(--color-danger); box-shadow: 0 0 0 10px rgba(176, 50, 36, .08);
+  animation: confirm-pop .25s ease-out;
+}
+.blocked-lead { color: var(--color-text); font-size: 1rem; }
+.shortage-list { list-style: none; margin: 0 0 .75rem; padding: 0; width: 100%; display: flex; flex-direction: column; gap: .5rem; text-align: left; }
+.shortage-list li { display: flex; gap: .75rem; align-items: flex-start; padding: .7rem .85rem; border-radius: var(--radius-sm); background: var(--color-warning-bg); color: #5c4306; }
+.shortage-list li.is-expired { background: var(--color-danger-bg); color: #7a2016; }
+.shortage-list li .pi { margin-top: .2rem; }
+.shortage-list strong, .shortage-list span { display: block; }
+.shortage-list span { font-size: .85rem; }
+.shortage-numbers { font-variant-numeric: tabular-nums; word-break: break-all; opacity: .9; }
+.blocked-note { font-size: .82rem; margin: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .confirm-icon, .blocked-icon { animation: none; }
+}
+.confirm-icon .pi, .blocked-icon .pi { font-size: inherit; }
+.confirm-icon, .blocked-icon { margin-top: .5rem; }
+
+/* Solid danger buttons: darker red so white text keeps a 4.5:1 contrast. */
+body .p-button.p-button-danger:not(.p-button-text):not(.p-button-outlined) {
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+  color: #fff;
+}
+body .p-button.p-button-danger:not(.p-button-text):not(.p-button-outlined):not(:disabled):hover { background: #8f281c; border-color: #8f281c; }

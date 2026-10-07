@@ -1,11 +1,11 @@
 <script setup>
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { LOCALE_STORAGE_KEY, SUPPORTED_LOCALES } from '../../../i18n.js';
+import { SUPPORTED_LOCALES } from '../../../i18n.js';
 
 /**
- * Presentation component that switches the active locale (en / es) and
- * remembers the choice in this browser.
+ * Header control that switches the interface between English and Spanish.
+ * Each option says its language name to screen readers.
  */
 const { locale, t } = useI18n();
 
@@ -14,19 +14,14 @@ const options = computed(() => SUPPORTED_LOCALES.map((code) => ({ code, label: c
 const selected = computed({
   get: () => locale.value,
   set: (value) => {
-    if (!value) return;
-    locale.value = value;
-    try {
-      localStorage.setItem(LOCALE_STORAGE_KEY, value);
-    } catch {
-      /* storage blocked: the choice lasts for this session only */
-    }
+    if (value) locale.value = value;
   },
 });
 </script>
 
 <template>
-  <div role="group" :aria-label="t('language.switcher')">
+  <div class="language-switcher" role="group" :aria-label="t('language.switcher')">
+    <i class="pi pi-globe" aria-hidden="true" />
     <pv-select-button
       v-model="selected"
       :options="options"
@@ -41,3 +36,8 @@ const selected = computed({
     </pv-select-button>
   </div>
 </template>
+
+<style scoped>
+.language-switcher { display: inline-flex; align-items: center; gap: .4rem; }
+.language-switcher > .pi { color: var(--color-muted); }
+</style>
