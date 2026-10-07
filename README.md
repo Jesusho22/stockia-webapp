@@ -78,10 +78,12 @@ src/
   alerts/                 # Alerts & Recommendations
   subscription/           # Subscription & Billing
   dashboard/              # Dashboard & Analytics (solo presentación)
+  settings/               # Configuraciones (solo presentación): ajustes, ayuda; compone IAM y Subscription
   shared/
-    domain/model/         # BusinessRuleError
+    application/          # notifications (avisos de los guards del router)
+    domain/model/         # BusinessRuleError, DecimalQuantity (cantidades de hasta 32 decimales)
     infrastructure/       # BaseApi (Axios) y BaseEndpoint (CRUD)
-    presentation/         # layout, language switcher, form field, page header, tema
+    presentation/         # layout, language switcher, form field, password/quantity input, page header, tema
   locales/                # en.json, es.json
   i18n.js
   router.js
@@ -100,6 +102,28 @@ Cada Bounded Context tiene sus capas:
 Un Bounded Context solo usa a otro a través de su store. Por ejemplo, `sales.store.js` valida el stock con
 `inventory.store.js` antes de confirmar la venta y, después, le pide descontar los insumos de la receta.
 
+## Business Rules
+
+- Una venta solo se registra si todos los insumos de la receta tienen stock suficiente y no están vencidos;
+  si no, aparece el aviso "Sale not processed" y no se escribe nada en el historial ni en el stock.
+- Dos insumos con el mismo nombre y unidad son lotes del mismo producto: se usa primero el lote más fresco que
+  no esté vencido (`product-inventory/domain/services/stock-allocation.js`).
+- El precio de un plato es la suma de sus ingredientes (cantidad × precio unitario) y es el precio de la venta.
+- Las cantidades aceptan hasta 32 decimales (decimal.js); la API recibe un número si es exacto o un texto si no.
+- Las listas muestran primero lo último agregado.
+
+## Roles
+
+| Funcionalidad | Administrador | Empleado |
+| --- | --- | --- |
+| Panel, inventario, recetas, ventas, predicción, alertas, ajustes y ayuda | Sí | Sí |
+| Recomendaciones | Sí | No |
+| Roles y permisos | Sí | No |
+| Tipo de suscripción y Mejorar plan | Sí | No |
+
+Las rutas restringidas tienen `meta.adminOnly` en `src/router.js`; el menú lee la misma marca y el guard muestra
+un aviso "Access denied" si un Empleado intenta abrirlas.
+
 ## Conventions
 
 - Archivos en kebab-case con sufijo de tipo: `inventory-item.entity.js`, `inventory.store.js`,
@@ -110,7 +134,7 @@ Un Bounded Context solo usa a otro a través de su store. Por ejemplo, `sales.st
 
 ## Internationalization
 
-- Configuración: `src/i18n.js` (inglés por defecto; el idioma elegido se guarda en el navegador).
+- Configuración: `src/i18n.js` (la app siempre inicia en inglés; el selector EN/ES del encabezado cambia el idioma).
 - Diccionarios: `src/locales/en.json`, `src/locales/es.json`.
 - `app.vue` actualiza el atributo `lang` del documento al cambiar de idioma.
 
