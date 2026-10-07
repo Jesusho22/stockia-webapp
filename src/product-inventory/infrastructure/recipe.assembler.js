@@ -1,4 +1,5 @@
 import { Recipe } from '../domain/model/recipe.entity.js';
+import { DecimalQuantity } from '../../shared/domain/model/decimal-quantity.js';
 
 /**
  * Maps recipe resources of the API into domain entities and back.
@@ -29,7 +30,7 @@ export class RecipeAssembler {
       id: entity.id,
       dishName: entity.dishName,
       active: entity.active,
-      ingredients: entity.ingredients.map((line) => ({ ...line })),
+      ingredients: entity.ingredients.map((line) => ({ ...line, quantityRequired: DecimalQuantity.toApi(line.quantityRequired) })),
     };
   }
 }

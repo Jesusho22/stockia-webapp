@@ -7,6 +7,7 @@ import { useInventoryStore } from '../../../product-inventory/application/invent
 import { useAlertsStore } from '../../../alerts/application/alerts.store.js';
 import { useForecastStore } from '../../../demand-forecasting/application/forecast.store.js';
 import { useMoney } from '../../../shared/presentation/composables/use-money.js';
+import { useQuantity } from '../../../shared/presentation/composables/use-quantity.js';
 import PageHeader from '../../../shared/presentation/components/page-header.vue';
 import StockStatusTag from '../../../product-inventory/presentation/components/stock-status-tag.vue';
 import AlertSeverityTag from '../../../alerts/presentation/components/alert-severity-tag.vue';
@@ -17,9 +18,10 @@ import ForecastChart from '../../../demand-forecasting/presentation/components/f
  * application stores of Inventory, Alerts and Demand Forecasting. It never
  * calls their infrastructure directly.
  */
-const { t, n } = useI18n();
+const { t } = useI18n();
 const toast = useToast();
 const { formatMoney } = useMoney();
+const { formatQuantity } = useQuantity();
 const iamStore = useIamStore();
 const inventoryStore = useInventoryStore();
 const alertsStore = useAlertsStore();
@@ -68,7 +70,7 @@ onMounted(async () => {
         <template #empty><div class="empty-state">{{ t('dashboard.no-critical-items') }}</div></template>
         <pv-column field="name" :header="t('inventory.columns.item')" />
         <pv-column :header="t('inventory.columns.quantity')">
-          <template #body="{ data }">{{ n(data.quantity, 'decimal') }} {{ data.unit }}</template>
+          <template #body="{ data }">{{ formatQuantity(data.quantity, data.unit) }}</template>
         </pv-column>
         <pv-column :header="t('inventory.columns.status')">
           <template #body="{ data }"><stock-status-tag :status="data.status" /></template>
