@@ -6,6 +6,8 @@ import { User } from '../domain/model/user.entity.js';
  * @property {string} fullName
  * @property {string} email
  * @property {string} restaurantName
+ * @property {string} [restaurantAddress]
+ * @property {string} [restaurantPhone]
  * @property {string} role
  * @property {string} [password]
  */
@@ -19,7 +21,9 @@ export class UserAssembler {
    * @returns {User}
    */
   static toEntityFromResource(resource) {
-    return new User({ ...resource });
+    // The password stays in the infrastructure layer: it never reaches the entity.
+    const { password, ...data } = resource ?? {};
+    return new User(data);
   }
 
   /**
@@ -41,6 +45,8 @@ export class UserAssembler {
       fullName: entity.fullName,
       email: entity.email,
       restaurantName: entity.restaurantName,
+      restaurantAddress: entity.restaurantAddress,
+      restaurantPhone: entity.restaurantPhone,
       role: entity.role,
     };
     if (password) resource.password = password;

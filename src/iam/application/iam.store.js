@@ -36,7 +36,8 @@ function persistSession(user) {
 
 /**
  * Application layer of the User & Access Management Bounded Context:
- * session (sign-in, sign-up, sign-out, profile) and team management
+ * session (sign-in, sign-up, sign-out), account settings (profile,
+ * restaurant data, password change with verification) and team management
  * (invite members, assign roles, remove members).
  */
 export const useIamStore = defineStore('iam', () => {
@@ -69,13 +70,17 @@ export const useIamStore = defineStore('iam', () => {
   }
 
   /**
-   * Registers the restaurant owner as the first Administrator.
+   * Registers the restaurant owner as the first Administrator. An email can
+   * only belong to one account.
    *
    * @param {{fullName: string, restaurantName: string, email: string, password: string}} form
    * @returns {Promise<User>}
    */
   async function signUp({ fullName, restaurantName, email, password }) {
-    const user = new User({ fullName: fullName.trim(), restaurantName: restaurantName.trim(), email: email.trim().toLowerCase(), role: UserRole.ADMIN });
+    const normalizedEmail = email.trim().toLowerCase();
+    const existing = await iamApi.findByEmail(normalizedEmail);
+    if ((existing.data ?? []).length > 0) throw new BusinessRuleError('iam.errors.email-taken');
+    const user = new User({ fullName: fullName.trim(), restaurantName: restaurantName.trim(), email: normalizedEmail, role: UserRole.ADMIN });
     const resource = UserAssembler.toResourceFromEntity(user, password);
     delete resource.id;
     const response = await iamApi.createUser(resource);
@@ -90,31 +95,76 @@ export const useIamStore = defineStore('iam', () => {
   }
 
   /**
-   * Edits the profile of the signed-in user. The stored password is kept
-   * unless a new one is given, because PUT replaces the whole record.
+   * Reads the stored record of the signed-in user. PUT replaces the whole
+   * record, so every change is merged over it (the password is kept).
    *
-   * @param {{fullName: string, restaurantName: string, email: string, password?: string}} changes
+   * @returns {Promise<Object>}
+   */
+  async function getStoredSessionUser() {
+    if (!currentUser.value) throw new BusinessRuleError('iam.errors.no-session');
+    const { data } = await iamApi.getUserById(currentUser.value.id);
+    return data;
+  }
+
+  /**
+   * Edits the personal data of the signed-in user. The email must stay unique.
+   *
+   * @param {{fullName: string, email: string}} changes
    * @returns {Promise<User>}
    */
-  async function updateProfile({ fullName, restaurantName, email, password }) {
-    if (!currentUser.value) throw new BusinessRuleError('iam.errors.no-session');
-    const { data: stored } = await iamApi.getUserById(currentUser.value.id);
-    const resource = {
-      ...stored,
-      fullName: fullName.trim(),
-      restaurantName: restaurantName.trim(),
-      email: email.trim().toLowerCase(),
-      ...(password ? { password } : {}),
-    };
-    await iamApi.updateUser(currentUser.value.id, resource);
+  async function updateProfile({ fullName, email }) {
+    const stored = await getStoredSessionUser();
+    const normalizedEmail = email.trim().toLowerCase();
+    if (normalizedEmail !== stored.email) {
+      const existing = await iamApi.findByEmail(normalizedEmail);
+      if ((existing.data ?? []).some((candidate) => candidate.id !== stored.id)) throw new BusinessRuleError('iam.errors.email-taken');
+    }
+    const resource = { ...stored, fullName: fullName.trim(), email: normalizedEmail };
+    await iamApi.updateUser(stored.id, resource);
     const updated = UserAssembler.toEntityFromResource(resource);
     setSession(updated);
     return updated;
   }
 
+  /**
+   * Edits the restaurant data (Administrator only). Every member of the team
+   * keeps the same restaurant data.
+   *
+   * @param {{restaurantName: string, restaurantAddress: string, restaurantPhone: string}} changes
+   * @returns {Promise<User>}
+   */
+  async function updateRestaurant({ restaurantName, restaurantAddress, restaurantPhone }) {
+    if (!isAdmin.value) throw new BusinessRuleError('iam.errors.admin-only');
+    const stored = await getStoredSessionUser();
+    const restaurant = {
+      restaurantName: restaurantName.trim(),
+      restaurantAddress: (restaurantAddress ?? '').trim(),
+      restaurantPhone: (restaurantPhone ?? '').trim(),
+    };
+    const { data: everyone } = await iamApi.getUsers();
+    const team = (everyone ?? []).filter((member) => member.id === stored.id || member.restaurantName === stored.restaurantName);
+    await Promise.all(team.map((member) => iamApi.updateUser(member.id, { ...member, ...restaurant })));
+    const updated = UserAssembler.toEntityFromResource({ ...stored, ...restaurant });
+    setSession(updated);
+    return updated;
+  }
+
+  /**
+   * Changes the password after verifying the current one.
+   *
+   * @param {{currentPassword: string, newPassword: string}} form
+   */
+  async function changePassword({ currentPassword, newPassword }) {
+    const stored = await getStoredSessionUser();
+    if (stored.password !== currentPassword) throw new BusinessRuleError('iam.errors.wrong-current-password');
+    if (currentPassword === newPassword) throw new BusinessRuleError('iam.errors.same-password');
+    await iamApi.updateUser(stored.id, { ...stored, password: newPassword });
+  }
+
   async function loadUsers() {
     const response = await iamApi.getUsers();
-    users.value = UserAssembler.toEntitiesFromResponse(response);
+    // Newest members first (the API assigns increasing ids).
+    users.value = UserAssembler.toEntitiesFromResponse(response).sort((a, b) => Number(b.id) - Number(a.id));
   }
 
   /**
@@ -123,11 +173,16 @@ export const useIamStore = defineStore('iam', () => {
    * @param {{fullName: string, email: string, role: string}} form
    */
   async function inviteMember({ fullName, email, role }) {
+    const normalizedEmail = email.trim().toLowerCase();
+    const existing = await iamApi.findByEmail(normalizedEmail);
+    if ((existing.data ?? []).length > 0) throw new BusinessRuleError('iam.errors.email-taken');
     const member = new User({
       fullName: fullName.trim(),
-      email: email.trim().toLowerCase(),
+      email: normalizedEmail,
       role,
       restaurantName: currentUser.value?.restaurantName ?? '',
+      restaurantAddress: currentUser.value?.restaurantAddress ?? '',
+      restaurantPhone: currentUser.value?.restaurantPhone ?? '',
     });
     const resource = UserAssembler.toResourceFromEntity(member, INVITATION_TEMPORARY_PASSWORD);
     delete resource.id;
@@ -174,6 +229,6 @@ export const useIamStore = defineStore('iam', () => {
 
   return {
     currentUser, users, isAuthenticated, isAdmin, adminCount,
-    signIn, signUp, signOut, updateProfile, loadUsers, inviteMember, canChangeRole, changeRole, removeMember,
+    signIn, signUp, signOut, updateProfile, updateRestaurant, changePassword, loadUsers, inviteMember, canChangeRole, changeRole, removeMember,
   };
 });

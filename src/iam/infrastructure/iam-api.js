@@ -34,6 +34,14 @@ export class IamApi extends BaseApi {
   }
 
   /**
+   * @param {string} email
+   * @returns {Promise<import('axios').AxiosResponse<any[]>>} users registered with that email
+   */
+  findByEmail(email) {
+    return this.#usersEndpoint.getAll({ email });
+  }
+
+  /**
    * @param {number} id
    * @returns {Promise<import('axios').AxiosResponse<any>>}
    */
