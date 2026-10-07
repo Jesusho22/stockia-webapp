@@ -21,7 +21,8 @@ export const useAlertsStore = defineStore('alerts', () => {
   const recommendationsLoaded = ref(false);
 
   const pendingCount = computed(() => alerts.value.filter((alert) => !alert.acknowledged).length);
-  const recentAlerts = computed(() => [...alerts.value].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt))));
+  // Newest first: by creation date, then by id (the API assigns increasing ids).
+  const recentAlerts = computed(() => [...alerts.value].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)) || Number(b.id) - Number(a.id)));
 
   async function loadAlerts() {
     const response = await alertsApi.getAlerts();
@@ -87,7 +88,8 @@ export const useAlertsStore = defineStore('alerts', () => {
 
   async function loadRecommendations() {
     const response = await alertsApi.getRecommendations();
-    recommendations.value = RecommendationAssembler.toEntitiesFromResponse(response);
+    // Newest recommendations first.
+    recommendations.value = RecommendationAssembler.toEntitiesFromResponse(response).sort((a, b) => Number(b.id) - Number(a.id));
     recommendationsLoaded.value = true;
   }
 

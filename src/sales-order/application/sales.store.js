@@ -6,17 +6,6 @@ import { Sale, SaleChannel, SaleStatus } from '../domain/model/sale.entity.js';
 import { useInventoryStore } from '../../product-inventory/application/inventory.store.js';
 import { BusinessRuleError } from '../../shared/domain/model/business-rule-error.js';
 
-/**
- * Reference price per dish. Pricing is not modeled as a Bounded Context yet,
- * so a simple map gives a plausible price for the demo menu.
- */
-const DEFAULT_DISH_PRICE = 25;
-const DISH_PRICE_BY_NAME = {
-  'Pizza Margarita': 28,
-  'Lomo Saltado': 32,
-  'Ensalada César con Pollo': 22,
-};
-
 const salesApi = new SalesApi();
 
 /**
@@ -26,7 +15,10 @@ const salesApi = new SalesApi();
  * `registerSale` implements SaleRegistrationService: it validates the stock
  * against the read model of Inventory & Recipe Management BEFORE confirming
  * the sale, and only after the API confirms it triggers the stock deduction
- * (simulated `DishSold` event). Voiding a sale does not return stock.
+ * (simulated `DishSold` event). A dish is NOT sold, and nothing is written in
+ * the sales history, when a supply is missing, short or only available in
+ * expired lots. The price of the dish is the sum of its ingredient costs.
+ * Voiding a sale does not return stock.
  */
 export const useSalesStore = defineStore('sales', () => {
   /** @type {import('vue').Ref<Sale[]>} */
@@ -35,7 +27,8 @@ export const useSalesStore = defineStore('sales', () => {
 
   const confirmedSales = computed(() => sales.value.filter((sale) => sale.isConfirmed));
   const totalRevenue = computed(() => confirmedSales.value.reduce((sum, sale) => sum + sale.total, 0));
-  const sortedSales = computed(() => [...sales.value].sort((a, b) => String(b.saleDate).localeCompare(String(a.saleDate))));
+  // Newest first: by sale date, then by id (the API assigns increasing ids).
+  const sortedSales = computed(() => [...sales.value].sort((a, b) => String(b.saleDate).localeCompare(String(a.saleDate)) || Number(b.id) - Number(a.id)));
 
   async function loadSales() {
     const response = await salesApi.getSales();
@@ -57,25 +50,22 @@ export const useSalesStore = defineStore('sales', () => {
     const recipe = inventoryStore.recipes.find((candidate) => candidate.id === recipeId);
     if (!recipe) throw new BusinessRuleError('sales.errors.recipe-not-found');
 
-    const missing = recipe.missingIngredients(inventoryStore.items);
-    if (missing.length > 0) {
-      throw new BusinessRuleError('sales.errors.insufficient-stock', {
-        dish: recipe.dishName,
-        items: missing.map((line) => line.inventoryItemName).join(', '),
-      });
+    const plan = inventoryStore.planSale(recipe);
+    if (!plan.canFulfill) {
+      throw new BusinessRuleError('sales.errors.cannot-sell', { dish: recipe.dishName, shortages: plan.shortages });
     }
 
     const sale = new Sale({
       saleDate: new Date().toISOString(),
       channel: SaleChannel.POS,
       status: SaleStatus.CONFIRMED,
-      lineItems: [{ recipeId: recipe.id, dishName: recipe.dishName, unitPrice: DISH_PRICE_BY_NAME[recipe.dishName] ?? DEFAULT_DISH_PRICE, quantity: 1 }],
+      lineItems: [{ recipeId: recipe.id, dishName: recipe.dishName, unitPrice: inventoryStore.priceOf(recipe), quantity: 1 }],
     });
     const resource = SaleAssembler.toResourceFromEntity(sale);
     delete resource.id;
     const response = await salesApi.createSale(resource);
     const created = SaleAssembler.toEntityFromResource(response.data);
-    sales.value = [...sales.value, created];
+    sales.value = [created, ...sales.value];
 
     // DishSold → RecipeStockDeductionService (Inventory & Recipe Management).
     await inventoryStore.deductStockForRecipe(recipe);
