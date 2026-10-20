@@ -4,8 +4,10 @@ Web Application de StockIA para el equipo de un restaurante: inventario, recetas
 alertas, recomendaciones, equipo y planes.
 
 - Producción: se despliega en Vercel (ver [`DEPLOY-VERCEL.md`](./DEPLOY-VERCEL.md)).
-- API: mientras se construye el RESTful API, consume la API simulada con json-server
-  [`stockia-mock-api`](https://github.com/Jesusho22/stockia-mock-api), desplegada en Render.
+- API: consume el RESTful API en ASP.NET Core
+  [`stockia-platform-api`](https://github.com/Jesusho22/stockia-platform-api) (JWT, MySQL y modelo ML de
+  pronóstico de demanda). La API simulada [`stockia-mock-api`](https://github.com/Jesusho22/stockia-mock-api)
+  queda solo como referencia.
 
 Credenciales de prueba: `admin@databitecorp.com` / `stockia123` (Administrador) y
 `empleado@databitecorp.com` / `stockia123` (Empleado).
@@ -46,26 +48,36 @@ La URL de la API se lee de las variables de Vite (`import.meta.env`):
 
 | Variable | Descripción |
 | :--- | :--- |
-| `VITE_STOCKIA_API_URL` | URL base de la API (`https://stockia-mock-api.onrender.com/api/v1`) |
+| `VITE_STOCKIA_API_URL` | URL base de la API (`http://localhost:5000/api/v1` en local) |
+| `VITE_AUTHENTICATION_ENDPOINT_PATH` | `/authentication` |
 | `VITE_USERS_ENDPOINT_PATH` | `/users` |
-| `VITE_INVENTORY_ITEMS_ENDPOINT_PATH` | `/inventoryItems` |
+| `VITE_RESTAURANTS_ENDPOINT_PATH` | `/restaurants` |
+| `VITE_INVENTORY_ITEMS_ENDPOINT_PATH` | `/inventory-items` |
 | `VITE_RECIPES_ENDPOINT_PATH` | `/recipes` |
 | `VITE_SALES_ENDPOINT_PATH` | `/sales` |
-| `VITE_DEMAND_FORECASTS_ENDPOINT_PATH` | `/demandForecasts` |
+| `VITE_DEMAND_FORECASTS_ENDPOINT_PATH` | `/demand-forecasts` |
 | `VITE_ALERTS_ENDPOINT_PATH` | `/alerts` |
 | `VITE_RECOMMENDATIONS_ENDPOINT_PATH` | `/recommendations` |
 | `VITE_PLANS_ENDPOINT_PATH` | `/plans` |
 | `VITE_SUBSCRIPTIONS_ENDPOINT_PATH` | `/subscriptions` |
 
-`.env.development` se usa con `npm run dev` y `.env.production` con `npm run build`. Para apuntar a la mock API
-en tu máquina (`npm start` en `stockia-mock-api`) sin tocar esos archivos, crea `.env.development.local` (no se
-sube al repositorio):
+`.env.development` se usa con `npm run dev` y `.env.production` con `npm run build`. Para correr la API en local:
+`docker compose up` (o `dotnet run`) en `stockia-platform-api`; queda en `http://localhost:5000`. Para apuntar a
+una API desplegada sin tocar esos archivos, crea `.env.production.local` o `.env.development.local` (no se suben):
 
 ```bash
-VITE_STOCKIA_API_URL="http://localhost:3000/api/v1"
+VITE_STOCKIA_API_URL="https://<tu-api>/api/v1"
 ```
 
-Cuando el RESTful API en ASP.NET Core esté desplegado, solo cambia `VITE_STOCKIA_API_URL`.
+El dominio de la Web App debe estar en `STOCKIA_CORS_ORIGINS` de la API (los `*.vercel.app` ya están permitidos).
+
+### Sesión con la API
+
+- Al iniciar sesión la API devuelve un JWT; se guarda con el usuario en `localStorage` (`stockia.session`) y
+  `BaseApi` lo envía como `Authorization: Bearer` en cada llamada.
+- Si la API responde 401 (token vencido o inválido) se cierra la sesión y aparece "Your session expired".
+- Los errores de la API llegan como ProblemDetails; `shared/infrastructure/api-error.js` traduce su código
+  (`title`) a los mensajes i18n de cada Bounded Context.
 
 ## Project Structure
 
@@ -99,17 +111,18 @@ Cada Bounded Context tiene sus capas:
   convierten recursos en entidades y viceversa.
 - `presentation/`: vistas (`views/`) y componentes (`components/`). No llaman a la API: usan el store.
 
-Un Bounded Context solo usa a otro a través de su store. Por ejemplo, `sales.store.js` valida el stock con
-`inventory.store.js` antes de confirmar la venta y, después, le pide descontar los insumos de la receta.
+Un Bounded Context solo usa a otro a través de su store. Las reglas de negocio se validan en la API; la Web App
+las refleja en pantalla (por ejemplo, `sales.store.js` envía la venta y, si la API responde 422 `CannotSell`,
+muestra el diálogo con los insumos faltantes y vuelve a cargar el inventario).
 
 ## Business Rules
 
-- Una venta solo se registra si todos los insumos de la receta tienen stock suficiente y no están vencidos;
-  si no, aparece el aviso "Sale not processed" y no se escribe nada en el historial ni en el stock.
+- Una venta solo se registra si todos los insumos de la receta tienen stock suficiente y no están vencidos
+  (lo valida la API); si no, aparece el aviso "Sale not processed" y no se escribe nada en el historial ni en el stock.
 - Dos insumos con el mismo nombre y unidad son lotes del mismo producto: se usa primero el lote más fresco que
   no esté vencido (`product-inventory/domain/services/stock-allocation.js`).
 - El precio de un plato es la suma de sus ingredientes (cantidad × precio unitario) y es el precio de la venta.
-- Las cantidades aceptan hasta 32 decimales (decimal.js); la API recibe un número si es exacto o un texto si no.
+- Las cantidades aceptan hasta 32 decimales (decimal.js); la API las guarda exactas y las devuelve como texto.
 - Las listas muestran primero lo último agregado.
 
 ## Roles
