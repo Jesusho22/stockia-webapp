@@ -1,8 +1,11 @@
 <script setup>
-import { watch, watchEffect } from 'vue';
+import { onBeforeUnmount, onMounted, watch, watchEffect } from 'vue';
+import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useToast } from 'primevue/usetoast';
-import { drainNotifications, notificationQueue } from './shared/application/notifications.js';
+import { drainNotifications, notificationQueue, notify } from './shared/application/notifications.js';
+import { SESSION_EXPIRED_EVENT } from './shared/infrastructure/base-api.js';
+import { useIamStore } from './iam/application/iam.store.js';
 
 /**
  * Presentation shell component.
@@ -11,10 +14,23 @@ import { drainNotifications, notificationQueue } from './shared/application/noti
  * Hosts the routed views plus the global toast and confirmation outlets, and
  * keeps the document language in sync with the active locale (WCAG 3.1.1).
  * Notifications raised outside components (router guards) are shown here as
- * toasts, e.g. "You do not have access to this section".
+ * toasts, e.g. "You do not have access to this section". When the API rejects
+ * the token (expired session) the user is signed out and sent to sign-in.
  */
 const { locale, t } = useI18n();
 const toast = useToast();
+const router = useRouter();
+const iamStore = useIamStore();
+
+function onSessionExpired() {
+  if (!iamStore.isAuthenticated) return;
+  iamStore.signOut();
+  notify({ severity: 'warn', summary: 'access.session-expired', detail: 'access.session-required-detail' });
+  router.push({ name: 'sign-in', query: { redirect: router.currentRoute.value.fullPath } });
+}
+
+onMounted(() => window.addEventListener(SESSION_EXPIRED_EVENT, onSessionExpired));
+onBeforeUnmount(() => window.removeEventListener(SESSION_EXPIRED_EVENT, onSessionExpired));
 
 watchEffect(() => {
   document.documentElement.lang = locale.value;

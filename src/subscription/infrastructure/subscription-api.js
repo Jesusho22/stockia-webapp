@@ -8,7 +8,8 @@ const subscriptionsEndpointPath = import.meta.env.VITE_SUBSCRIPTIONS_ENDPOINT_PA
  * Infrastructure adapter of the Subscription & Billing Bounded Context.
  *
  * @remarks
- * The Stripe / PayPal checkout is simulated: no real payment is processed.
+ * The Stripe / PayPal checkout is simulated by the API (SimulatedPaymentGateway):
+ * no real payment is processed.
  */
 export class SubscriptionApi extends BaseApi {
   #plansEndpoint;
@@ -21,9 +22,10 @@ export class SubscriptionApi extends BaseApi {
   }
 
   getPlans() { return this.#plansEndpoint.getAll(); }
-  getSubscriptions() { return this.#subscriptionsEndpoint.getAll(); }
-  /** @param {Object} resource */
-  createSubscription(resource) { return this.#subscriptionsEndpoint.create(resource); }
-  /** @param {number} id @param {Object} resource complete subscription resource */
-  updateSubscription(id, resource) { return this.#subscriptionsEndpoint.update(id, resource); }
+
+  /** Subscription of the signed-in restaurant (Administrator only). */
+  getCurrentSubscription() { return this.#subscriptionsEndpoint.getPath('current'); }
+
+  /** @param {{planId: number, paymentMethod: string}} choice simulated Stripe / PayPal checkout */
+  choosePlan(choice) { return this.#subscriptionsEndpoint.create(choice); }
 }

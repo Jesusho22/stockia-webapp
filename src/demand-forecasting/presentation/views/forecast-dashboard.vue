@@ -18,8 +18,13 @@ const loading = ref(!forecastStore.loaded);
 const generating = ref(false);
 const latest = computed(() => forecastStore.latest);
 
-/** Weather values stored by the API (Spanish) mapped to i18n keys. */
-const WEATHER_KEYS = { Soleado: 'sunny', Nublado: 'cloudy', 'Lluvia ligera': 'light-rain' };
+/** Weather codes of the API (and old Spanish values) mapped to i18n keys. */
+const WEATHER_KEYS = {
+  SUNNY: 'sunny', CLOUDY: 'cloudy', DRIZZLE: 'light-rain', RAIN: 'rain', Soleado: 'sunny', Nublado: 'cloudy', 'Lluvia ligera': 'light-rain',
+};
+const methodLabel = computed(() => (latest.value?.method === 'MACHINE_LEARNING'
+  ? t('forecast.method.ml', { version: latest.value.modelVersion })
+  : t('forecast.method.baseline')));
 const weatherLabel = computed(() => {
   const key = `forecast.weather.${WEATHER_KEYS[latest.value?.weatherCondition] ?? ''}`;
   return te(key) ? t(key) : latest.value?.weatherCondition;
@@ -41,7 +46,8 @@ async function generate() {
     await forecastStore.generate();
     toast.add({ severity: 'success', summary: t('forecast.generated'), life: 2500 });
   } catch (error) {
-    toast.add({ severity: 'error', summary: t(toErrorMessage(error, 'errors.save').code), life: 4000 });
+    const { code, params } = toErrorMessage(error, 'errors.save');
+    toast.add({ severity: 'error', summary: t(code, params), life: 4000 });
   } finally {
     generating.value = false;
   }
@@ -74,6 +80,11 @@ async function generate() {
       <div class="surface-card">
         <p class="stat-label">{{ t('forecast.generated-at') }}</p>
         <p class="stat-value stat-small">{{ d(new Date(latest.generatedAt), 'long') }}</p>
+      </div>
+      <div class="surface-card">
+        <p class="stat-label">{{ t('forecast.method-label') }}</p>
+        <p class="stat-value stat-small">{{ methodLabel }}</p>
+        <p v-if="latest.weatherSource" class="form-hint">{{ t(`forecast.weather-source.${latest.weatherSource}`) }}</p>
       </div>
     </div>
 

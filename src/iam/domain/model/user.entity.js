@@ -5,6 +5,7 @@ import { UserRole } from './user-role.js';
  * @property {number} [id]
  * @property {string} [fullName]
  * @property {string} [email]
+ * @property {number} [restaurantId]
  * @property {string} [restaurantName]
  * @property {string} [restaurantAddress]
  * @property {string} [restaurantPhone]
@@ -21,9 +22,11 @@ export class User {
    * @param {UserProps} [props]
    */
   constructor({
-    id = 0, fullName = '', email = '', restaurantName = '', restaurantAddress = '', restaurantPhone = '', role = UserRole.EMPLOYEE,
+    id = 0, fullName = '', email = '', restaurantId = 0, restaurantName = '', restaurantAddress = '', restaurantPhone = '',
+    role = UserRole.EMPLOYEE,
   } = {}) {
     this.id = id;
+    this.restaurantId = restaurantId;
     this.fullName = fullName;
     this.email = email;
     this.restaurantName = restaurantName;

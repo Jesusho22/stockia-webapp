@@ -26,10 +26,10 @@ function newestFirst(list) {
  *
  * @remarks
  * - `planSale` checks a recipe against the stock with the allocation domain
- *   service (expired lots are never used; the freshest lot goes first).
- * - `deductStockForRecipe` plays the role of RecipeStockDeductionService: it is
- *   invoked by the Sales & Order Management store right after a sale is
- *   confirmed (reaction to the `DishSold` domain event), never by the UI.
+ *   service (expired lots are never used; the freshest lot goes first), so the
+ *   recipes view can tell which dishes are ready to sell.
+ * - The stock deduction of a sale (RecipeStockDeductionService) runs in the
+ *   StockIA Platform API, in the same transaction as the sale.
  * - Lists are kept newest first, so a new supply or recipe appears at the top.
  */
 export const useInventoryStore = defineStore('inventory', () => {
@@ -127,25 +127,8 @@ export const useInventoryStore = defineStore('inventory', () => {
     return planAllocation(recipe, items.value, portions);
   }
 
-  /**
-   * RecipeStockDeductionService: discounts from the lots the quantity the
-   * sold recipe requires, freshest lot first and never from an expired lot.
-   *
-   * @param {Recipe} recipe
-   * @param {number} [portions]
-   */
-  async function deductStockForRecipe(recipe, portions = 1) {
-    const plan = planSale(recipe, portions);
-    if (!plan.canFulfill) throw new BusinessRuleError('sales.errors.cannot-sell', { dish: recipe.dishName, shortages: plan.shortages });
-    await Promise.all(plan.deductions.map(({ item, remaining }) => {
-      const resource = InventoryItemAssembler.toResourceFromEntity(new InventoryItem({ ...item, quantity: remaining }));
-      return inventoryApi.updateInventoryItem(item.id, resource);
-    }));
-    await loadItems();
-  }
-
   return {
     items, recipes, itemsLoaded, recipesLoaded, attentionCount, expiringSoonCount, inventoryValue, itemsNeedingAttention,
-    loadItems, loadRecipes, saveItem, deleteItem, saveRecipe, deleteRecipe, priceOf, planSale, deductStockForRecipe,
+    loadItems, loadRecipes, saveItem, deleteItem, saveRecipe, deleteRecipe, priceOf, planSale,
   };
 });

@@ -4,8 +4,9 @@ import { BaseEndpoint } from '../../shared/infrastructure/base-endpoint.js';
 const salesEndpointPath = import.meta.env.VITE_SALES_ENDPOINT_PATH;
 
 /**
- * Infrastructure adapter of the Sales & Order Management Bounded Context
- * (SaleRepository over the API).
+ * Infrastructure adapter of the Sales & Order Management Bounded Context.
+ * The API validates the stock, prices the dish, records the sale and
+ * discounts the supplies in one transaction.
  */
 export class SalesApi extends BaseApi {
   #salesEndpoint;
@@ -16,8 +17,10 @@ export class SalesApi extends BaseApi {
   }
 
   getSales() { return this.#salesEndpoint.getAll(); }
-  /** @param {Object} resource */
-  createSale(resource) { return this.#salesEndpoint.create(resource); }
-  /** @param {number} id @param {Object} resource complete sale resource */
-  updateSale(id, resource) { return this.#salesEndpoint.update(id, resource); }
+
+  /** @param {{recipeId: number, quantity: number, channel: string}} sale */
+  registerSale(sale) { return this.#salesEndpoint.create(sale); }
+
+  /** @param {number} id */
+  voidSale(id) { return this.#salesEndpoint.post(`${id}/void`); }
 }

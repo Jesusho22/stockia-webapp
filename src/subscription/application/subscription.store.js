@@ -3,7 +3,6 @@ import { computed, ref } from 'vue';
 import { SubscriptionApi } from '../infrastructure/subscription-api.js';
 import { PlanAssembler, SubscriptionAssembler } from '../infrastructure/subscription.assembler.js';
 import { Plan } from '../domain/model/plan.entity.js';
-import { Subscription } from '../domain/model/subscription.entity.js';
 
 const subscriptionApi = new SubscriptionApi();
 
@@ -20,9 +19,12 @@ export const useSubscriptionStore = defineStore('subscription', () => {
   const currentPlan = computed(() => plans.value.find((plan) => plan.id === current.value?.planId) ?? null);
 
   async function load() {
-    const [plansResponse, subscriptionsResponse] = await Promise.all([subscriptionApi.getPlans(), subscriptionApi.getSubscriptions()]);
+    const [plansResponse, subscriptionResponse] = await Promise.all([
+      subscriptionApi.getPlans(),
+      subscriptionApi.getCurrentSubscription().catch((error) => (error?.response?.status === 404 ? { data: null } : Promise.reject(error))),
+    ]);
     plans.value = PlanAssembler.toEntitiesFromResponse(plansResponse);
-    current.value = SubscriptionAssembler.toEntitiesFromResponse(subscriptionsResponse)[0] ?? null;
+    current.value = subscriptionResponse.data ? SubscriptionAssembler.toEntityFromResource(subscriptionResponse.data) : null;
     loaded.value = true;
   }
 
@@ -34,17 +36,8 @@ export const useSubscriptionStore = defineStore('subscription', () => {
    * @param {string} paymentMethod a PaymentMethod value
    */
   async function choosePlan(plan, paymentMethod) {
-    const existing = current.value;
-    const subscription = Subscription.activate(plan.id, paymentMethod, existing?.id ?? 0);
-    const resource = SubscriptionAssembler.toResourceFromEntity(subscription);
-    if (existing) {
-      await subscriptionApi.updateSubscription(existing.id, resource);
-      current.value = subscription;
-    } else {
-      delete resource.id;
-      const response = await subscriptionApi.createSubscription(resource);
-      current.value = SubscriptionAssembler.toEntityFromResource(response.data);
-    }
+    const { data } = await subscriptionApi.choosePlan({ planId: plan.id, paymentMethod });
+    current.value = SubscriptionAssembler.toEntityFromResource(data);
   }
 
   return { plans, current, loaded, currentPlan, load, choosePlan };

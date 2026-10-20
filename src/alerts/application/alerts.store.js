@@ -6,6 +6,7 @@ import { RecommendationAssembler } from '../infrastructure/recommendation.assemb
 import { Alert } from '../domain/model/alert.entity.js';
 import { Recommendation } from '../domain/model/recommendation.entity.js';
 import { BusinessRuleError } from '../../shared/domain/model/business-rule-error.js';
+import { toBusinessRuleError } from '../../shared/infrastructure/api-error.js';
 
 const alertsApi = new AlertsApi();
 
@@ -31,21 +32,17 @@ export const useAlertsStore = defineStore('alerts', () => {
   }
 
   /** @param {Alert} alert */
-  async function persist(alert) {
-    await alertsApi.updateAlert(alert.id, AlertAssembler.toResourceFromEntity(alert));
+  function replace(alert) {
     alerts.value = alerts.value.map((candidate) => (candidate.id === alert.id ? alert : candidate));
   }
 
   /**
-   * Creates an alert manually. Its main channel counts as the first delivery attempt.
+   * Creates an alert manually. The API sends it by its main channel (first delivery attempt).
    *
    * @param {{type: string, severity: string, message: string, channel: string}} form
    */
   async function createAlert({ type, severity, message, channel }) {
-    const alert = new Alert({ type, severity, message: message.trim(), channel, createdAt: new Date().toISOString(), acknowledged: false, deliveredChannels: [channel] });
-    const resource = AlertAssembler.toResourceFromEntity(alert);
-    delete resource.id;
-    await alertsApi.createAlert(resource);
+    await alertsApi.createAlert({ type, severity, message: message.trim(), channel });
     await loadAlerts();
   }
 
@@ -54,7 +51,8 @@ export const useAlertsStore = defineStore('alerts', () => {
    * @param {{type: string, severity: string, message: string, channel: string}} form
    */
   async function updateAlert(current, { type, severity, message, channel }) {
-    await persist(new Alert({ ...current, type, severity, message: message.trim(), channel }));
+    const { data } = await alertsApi.updateAlert(current.id, { type, severity, message: message.trim(), channel });
+    replace(AlertAssembler.toEntityFromResource(data));
   }
 
   /** @param {Alert} alert */
@@ -70,11 +68,16 @@ export const useAlertsStore = defineStore('alerts', () => {
    */
   async function acknowledge(alert) {
     if (!alert.delivered) throw new BusinessRuleError('alerts.errors.not-delivered');
-    await persist(new Alert({ ...alert, acknowledged: true }));
+    try {
+      const { data } = await alertsApi.acknowledgeAlert(alert.id);
+      replace(AlertAssembler.toEntityFromResource(data));
+    } catch (error) {
+      throw toBusinessRuleError(error, { NotDelivered: 'alerts.errors.not-delivered' });
+    }
   }
 
   /**
-   * Simulates a successful new delivery attempt on the pending channel.
+   * New delivery attempt on the pending channel (done by the API).
    *
    * @param {Alert} alert
    * @returns {Promise<string|null>} channel delivered in this attempt
@@ -82,7 +85,8 @@ export const useAlertsStore = defineStore('alerts', () => {
   async function retryDelivery(alert) {
     const channel = alert.pendingChannel;
     if (!channel) return null;
-    await persist(new Alert({ ...alert, deliveredChannels: [...alert.deliveredChannels, channel] }));
+    const { data } = await alertsApi.retryDelivery(alert.id);
+    replace(AlertAssembler.toEntityFromResource(data));
     return channel;
   }
 
@@ -95,8 +99,8 @@ export const useAlertsStore = defineStore('alerts', () => {
 
   /** @param {Recommendation} recommendation */
   async function applyRecommendation(recommendation) {
-    const applied = new Recommendation({ ...recommendation, applied: true });
-    await alertsApi.updateRecommendation(recommendation.id, RecommendationAssembler.toResourceFromEntity(applied));
+    const { data } = await alertsApi.applyRecommendation(recommendation.id);
+    const applied = RecommendationAssembler.toEntityFromResource(data);
     recommendations.value = recommendations.value.map((candidate) => (candidate.id === applied.id ? applied : candidate));
   }
 

@@ -319,7 +319,7 @@
   },
   "forecast": {
     "title": "Demand forecast",
-    "description": "Projected sales per dish for the next 7 days, combining sales history and weather.",
+    "description": "Units per dish for the next 7 days, predicted by a Machine Learning model with the sales history, holidays, paydays and the weather forecast.",
     "generate": "Generate new forecast (AI)",
     "generating": "Generating…",
     "generated": "A new forecast was generated.",
@@ -334,7 +334,20 @@
     "weather": {
       "sunny": "Sunny",
       "cloudy": "Cloudy",
-      "light-rain": "Light rain"
+      "light-rain": "Light rain",
+      "rain": "Rain"
+    },
+    "method-label": "Method",
+    "method": {
+      "ml": "ML model v{version}",
+      "baseline": "Weekly average (little history)"
+    },
+    "weather-source": {
+      "open-meteo": "Weather: Open-Meteo forecast",
+      "climatology": "Weather: Lima climatology"
+    },
+    "errors": {
+      "no-dishes": "Create at least one recipe before generating a forecast."
     }
   },
   "alerts": {
@@ -452,7 +465,8 @@
     "denied": "Access denied",
     "denied-detail": "Your role does not have access to this section. Ask an Administrator.",
     "session-required": "Sign in to continue",
-    "session-required-detail": "You need an active session to open that page."
+    "session-required-detail": "You need an active session to open that page.",
+    "session-expired": "Your session expired"
   },
   "settings": {
     "hub": {

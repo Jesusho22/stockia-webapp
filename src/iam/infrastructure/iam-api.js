@@ -1,69 +1,53 @@
 import { BaseApi } from '../../shared/infrastructure/base-api.js';
 import { BaseEndpoint } from '../../shared/infrastructure/base-endpoint.js';
 
+const authenticationEndpointPath = import.meta.env.VITE_AUTHENTICATION_ENDPOINT_PATH ?? '/authentication';
 const usersEndpointPath = import.meta.env.VITE_USERS_ENDPOINT_PATH;
+const restaurantsEndpointPath = import.meta.env.VITE_RESTAURANTS_ENDPOINT_PATH ?? '/restaurants';
 
 /**
- * Infrastructure adapter of the User & Access Management Bounded Context.
- *
- * @remarks
- * With the json-server mock API, signing in is a query by email and password
- * over `/users`; the ASP.NET Core RESTful API will replace it with a
- * `POST /authentication/sign-in` endpoint that returns a token.
+ * Infrastructure adapter of the User & Access Management Bounded Context over
+ * the StockIA Platform API: sign-in/sign-up return the user with a JWT; the
+ * password never travels back from the API.
  */
 export class IamApi extends BaseApi {
+  #authenticationEndpoint;
   #usersEndpoint;
+  #restaurantsEndpoint;
 
   constructor() {
     super();
+    this.#authenticationEndpoint = new BaseEndpoint(this, authenticationEndpointPath);
     this.#usersEndpoint = new BaseEndpoint(this, usersEndpointPath);
+    this.#restaurantsEndpoint = new BaseEndpoint(this, restaurantsEndpointPath);
   }
 
-  /** @returns {Promise<import('axios').AxiosResponse<any[]>>} */
-  getUsers() {
-    return this.#usersEndpoint.getAll();
-  }
+  /** @param {{email: string, password: string}} credentials */
+  signIn(credentials) { return this.#authenticationEndpoint.post('sign-in', credentials); }
 
-  /**
-   * @param {string} email
-   * @param {string} password
-   * @returns {Promise<import('axios').AxiosResponse<any[]>>} matching users; empty when credentials are wrong
-   */
-  signIn(email, password) {
-    return this.#usersEndpoint.getAll({ email, password });
-  }
+  /** @param {{fullName: string, restaurantName: string, email: string, password: string}} form */
+  signUp(form) { return this.#authenticationEndpoint.post('sign-up', form); }
 
-  /**
-   * @param {string} email
-   * @returns {Promise<import('axios').AxiosResponse<any[]>>} users registered with that email
-   */
-  findByEmail(email) {
-    return this.#usersEndpoint.getAll({ email });
-  }
+  /** Team of the restaurant (Administrator). */
+  getUsers() { return this.#usersEndpoint.getAll(); }
 
-  /**
-   * @param {number} id
-   * @returns {Promise<import('axios').AxiosResponse<any>>}
-   */
-  getUserById(id) {
-    return this.#usersEndpoint.getById(id);
-  }
+  /** @param {{fullName: string, email: string, role: string}} member */
+  inviteMember(member) { return this.#usersEndpoint.create(member); }
 
-  /** @param {Object} resource */
-  createUser(resource) {
-    return this.#usersEndpoint.create(resource);
-  }
+  /** @param {number} id @param {{fullName: string, email: string}} profile */
+  updateProfile(id, profile) { return this.#usersEndpoint.patch(`${id}`, profile); }
 
-  /**
-   * @param {number} id
-   * @param {Object} resource complete user resource
-   */
-  updateUser(id, resource) {
-    return this.#usersEndpoint.update(id, resource);
-  }
+  /** @param {number} id @param {{currentPassword: string, newPassword: string}} passwords */
+  changePassword(id, passwords) { return this.#usersEndpoint.post(`${id}/change-password`, passwords); }
+
+  /** @param {number} id @param {string} role */
+  changeRole(id, role) { return this.#usersEndpoint.patch(`${id}/role`, { role }); }
 
   /** @param {number} id */
-  deleteUser(id) {
-    return this.#usersEndpoint.delete(id);
-  }
+  removeMember(id) { return this.#usersEndpoint.delete(id); }
+
+  getRestaurant() { return this.#restaurantsEndpoint.getPath('current'); }
+
+  /** @param {{name: string, address: string, phone: string}} restaurant */
+  updateRestaurant(restaurant) { return this.#restaurantsEndpoint.put('current', restaurant); }
 }

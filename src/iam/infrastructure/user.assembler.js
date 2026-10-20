@@ -5,15 +5,16 @@ import { User } from '../domain/model/user.entity.js';
  * @property {number} id
  * @property {string} fullName
  * @property {string} email
+ * @property {string} role ADMIN | EMPLOYEE
+ * @property {number} restaurantId
  * @property {string} restaurantName
  * @property {string} [restaurantAddress]
  * @property {string} [restaurantPhone]
- * @property {string} role
- * @property {string} [password]
+ * @property {string} [token] only in sign-in and sign-up responses
  */
 
 /**
- * Maps user resources of the API into domain entities and back.
+ * Maps user resources of the API into domain entities.
  */
 export class UserAssembler {
   /**
@@ -21,8 +22,8 @@ export class UserAssembler {
    * @returns {User}
    */
   static toEntityFromResource(resource) {
-    // The password stays in the infrastructure layer: it never reaches the entity.
-    const { password, ...data } = resource ?? {};
+    // The token stays in the session storage: it never reaches the entity.
+    const { token, ...data } = resource ?? {};
     return new User(data);
   }
 
@@ -32,24 +33,5 @@ export class UserAssembler {
    */
   static toEntitiesFromResponse(response) {
     return (response.data ?? []).map((resource) => this.toEntityFromResource(resource));
-  }
-
-  /**
-   * @param {User} entity
-   * @param {string} [password] only sent when it is set or changed
-   * @returns {UserResource}
-   */
-  static toResourceFromEntity(entity, password) {
-    const resource = {
-      id: entity.id,
-      fullName: entity.fullName,
-      email: entity.email,
-      restaurantName: entity.restaurantName,
-      restaurantAddress: entity.restaurantAddress,
-      restaurantPhone: entity.restaurantPhone,
-      role: entity.role,
-    };
-    if (password) resource.password = password;
-    return resource;
   }
 }

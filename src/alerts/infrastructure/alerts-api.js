@@ -6,6 +6,8 @@ const recommendationsEndpointPath = import.meta.env.VITE_RECOMMENDATIONS_ENDPOIN
 
 /**
  * Infrastructure adapter of the Alerts & Recommendations Bounded Context.
+ * Acknowledging and delivering are actions of the API, which checks the
+ * delivery rule (critical alerts need WhatsApp and email).
  */
 export class AlertsApi extends BaseApi {
   #alertsEndpoint;
@@ -18,14 +20,18 @@ export class AlertsApi extends BaseApi {
   }
 
   getAlerts() { return this.#alertsEndpoint.getAll(); }
-  /** @param {Object} resource */
-  createAlert(resource) { return this.#alertsEndpoint.create(resource); }
-  /** @param {number} id @param {Object} resource complete alert resource */
-  updateAlert(id, resource) { return this.#alertsEndpoint.update(id, resource); }
+  /** @param {{type: string, severity: string, message: string, channel: string}} alert */
+  createAlert(alert) { return this.#alertsEndpoint.create(alert); }
+  /** @param {number} id @param {{type: string, severity: string, message: string, channel: string}} alert */
+  updateAlert(id, alert) { return this.#alertsEndpoint.update(id, alert); }
   /** @param {number} id */
   deleteAlert(id) { return this.#alertsEndpoint.delete(id); }
+  /** @param {number} id */
+  acknowledgeAlert(id) { return this.#alertsEndpoint.post(`${id}/acknowledge`); }
+  /** @param {number} id */
+  retryDelivery(id) { return this.#alertsEndpoint.post(`${id}/deliveries`); }
 
   getRecommendations() { return this.#recommendationsEndpoint.getAll(); }
-  /** @param {number} id @param {Object} resource complete recommendation resource */
-  updateRecommendation(id, resource) { return this.#recommendationsEndpoint.update(id, resource); }
+  /** @param {number} id */
+  applyRecommendation(id) { return this.#recommendationsEndpoint.post(`${id}/apply`); }
 }
