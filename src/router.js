@@ -3,8 +3,11 @@ import { useIamStore } from './iam/application/iam.store.js';
 import { notify } from './shared/application/notifications.js';
 
 /**
- * Application routes. Each view is loaded lazily, so every Bounded Context
- * ships in its own chunk. Paths match the ones referenced by the Landing Page
+ * Application routes. Each view is loaded lazily from the folder of its
+ * Bounded Context (iam, restaurant-registration, stock-management,
+ * recipes-management, ml-recommendations, notifications-messaging,
+ * analytics-dashboard, subscription-payments), so every context ships in its
+ * own chunk. Paths match the ones referenced by the Landing Page
  * call-to-action buttons (`/auth/sign-up`, `/auth/sign-in`).
  *
  * @remarks
@@ -23,8 +26,20 @@ const routes = [
   {
     path: '/auth/sign-up',
     name: 'sign-up',
-    component: () => import('./iam/presentation/views/sign-up.vue'),
+    component: () => import('./restaurant-registration/presentation/views/sign-up.vue'),
     meta: { guestOnly: true },
+  },
+  {
+    path: '/auth/forgot-password',
+    name: 'forgot-password',
+    component: () => import('./iam/presentation/views/forgot-password.vue'),
+    meta: { guestOnly: true },
+  },
+  {
+    // Recovery link of the password email: ?email=…&code=…
+    path: '/auth/reset-password',
+    name: 'reset-password',
+    component: () => import('./iam/presentation/views/reset-password.vue'),
   },
   {
     path: '/app',
@@ -32,27 +47,27 @@ const routes = [
     meta: { requiresAuth: true },
     children: [
       { path: '', redirect: { name: 'dashboard' } },
-      { path: 'dashboard', name: 'dashboard', component: () => import('./dashboard/presentation/views/business-dashboard.vue') },
-      { path: 'inventory', name: 'inventory', component: () => import('./product-inventory/presentation/views/inventory-list.vue') },
-      { path: 'recipes', name: 'recipes', component: () => import('./product-inventory/presentation/views/recipe-list.vue') },
-      { path: 'sales', name: 'sales', component: () => import('./sales-order/presentation/views/sales-history.vue') },
-      { path: 'forecast', name: 'forecast', component: () => import('./demand-forecasting/presentation/views/forecast-dashboard.vue') },
-      { path: 'alerts', name: 'alerts', component: () => import('./alerts/presentation/views/alerts-list.vue') },
+      { path: 'dashboard', name: 'dashboard', component: () => import('./analytics-dashboard/presentation/views/business-dashboard.vue') },
+      { path: 'inventory', name: 'inventory', component: () => import('./stock-management/presentation/views/inventory-list.vue') },
+      { path: 'recipes', name: 'recipes', component: () => import('./recipes-management/presentation/views/recipe-list.vue') },
+      { path: 'sales', name: 'sales', component: () => import('./recipes-management/presentation/views/sales-history.vue') },
+      { path: 'forecast', name: 'forecast', component: () => import('./ml-recommendations/presentation/views/forecast-dashboard.vue') },
+      { path: 'alerts', name: 'alerts', component: () => import('./notifications-messaging/presentation/views/alerts-list.vue') },
       {
         path: 'recommendations',
         name: 'recommendations',
-        component: () => import('./alerts/presentation/views/recommendations-list.vue'),
+        component: () => import('./ml-recommendations/presentation/views/recommendations-list.vue'),
         meta: { adminOnly: true },
       },
       { path: 'roles', name: 'roles', component: () => import('./iam/presentation/views/team-roles.vue'), meta: { adminOnly: true } },
       // Settings: account settings, help, upgrade plan and sign out (in the menu).
-      { path: 'settings', name: 'settings', component: () => import('./settings/presentation/views/settings-hub.vue') },
-      { path: 'settings/account', name: 'settings-account', component: () => import('./settings/presentation/views/account-settings.vue') },
-      { path: 'settings/help', name: 'settings-help', component: () => import('./settings/presentation/views/help-center.vue') },
+      { path: 'settings', name: 'settings', component: () => import('./shared/presentation/views/settings-hub.vue') },
+      { path: 'settings/account', name: 'settings-account', component: () => import('./iam/presentation/views/account-settings.vue') },
+      { path: 'settings/help', name: 'settings-help', component: () => import('./shared/presentation/views/help-center.vue') },
       {
         path: 'settings/plans',
         name: 'settings-plans',
-        component: () => import('./subscription/presentation/views/plans-page.vue'),
+        component: () => import('./subscription-payments/presentation/views/plans-page.vue'),
         meta: { adminOnly: true },
       },
       // Old paths (before the Settings menu) keep working.

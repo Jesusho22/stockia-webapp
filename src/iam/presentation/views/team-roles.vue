@@ -85,6 +85,20 @@ function remove(user) {
     },
   });
 }
+
+/**
+ * Unlocks a member locked by 5 wrong passwords (Account Lock Service).
+ *
+ * @param {import('../../domain/model/user.entity.js').User} user
+ */
+async function unlock(user) {
+  try {
+    await iamStore.unlockMember(user);
+    toast.add({ severity: 'success', summary: t('team.unlocked', { name: user.fullName }), life: 2500 });
+  } catch (error) {
+    showError(error, 'errors.save');
+  }
+}
 </script>
 
 <template>
@@ -102,6 +116,8 @@ function remove(user) {
         <template #body="{ data }">
           {{ data.fullName }}
           <pv-tag v-if="data.id === iamStore.currentUser?.id" :value="t('team.you')" severity="secondary" class="ml-2" />
+          <pv-tag v-if="data.locked" :value="t('team.locked')" severity="danger" icon="pi pi-lock" class="ml-2"
+            v-tooltip.top="t('team.locked-hint')" />
         </template>
       </pv-column>
       <pv-column field="email" :header="t('fields.email')" />
@@ -116,6 +132,8 @@ function remove(user) {
       <pv-column :header="t('common.actions')">
         <template #body="{ data }">
           <div class="row-actions">
+            <pv-button v-if="data.locked" icon="pi pi-lock-open" severity="warn" text rounded :aria-label="t('team.unlock-of', { name: data.fullName })"
+              v-tooltip.top="t('team.unlock')" @click="unlock(data)" />
             <pv-button icon="pi pi-trash" severity="danger" text rounded :aria-label="t('team.remove-of', { name: data.fullName })"
               v-tooltip.top="t('common.delete')" @click="remove(data)" />
           </div>

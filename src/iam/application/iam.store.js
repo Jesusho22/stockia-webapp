@@ -5,7 +5,7 @@ import { UserAssembler } from '../infrastructure/user.assembler.js';
 import { User } from '../domain/model/user.entity.js';
 import { UserRole } from '../domain/model/user-role.js';
 import { BusinessRuleError } from '../../shared/domain/model/business-rule-error.js';
-import { toBusinessRuleError } from '../../shared/infrastructure/api-error.js';
+import { problemOf, toBusinessRuleError } from '../../shared/infrastructure/api-error.js';
 import { loadSession, saveSession } from '../../shared/infrastructure/session-storage.js';
 
 /** Temporary password of invited members (the API uses the same one by default). */
@@ -20,19 +20,27 @@ const IAM_ERRORS = {
   LastAdministrator: 'iam.errors.last-admin',
   CannotRemoveYourself: 'iam.errors.remove-self',
   Forbidden: 'iam.errors.admin-only',
+  InvalidResetCode: 'iam.errors.invalid-reset-code',
 };
+
+/** From this number of remaining tries the sign-in warns how many are left. */
+const WARN_ATTEMPTS_LEFT = 2;
 
 const iamApi = new IamApi();
 
 /**
- * Application layer of the User & Access Management Bounded Context:
- * session (sign-in, sign-up, sign-out), account settings (profile,
- * restaurant data, password change with verification) and team management.
+ * Application layer of the Identity & Access Management Bounded Context:
+ * session (sign-in, sign-out), password (change with verification and
+ * recovery by email), account lock after wrong passwords and team
+ * management. The restaurant registration (sign-up) and the restaurant data
+ * belong to Restaurant Registration, which opens the session through
+ * `startSession`.
  *
  * @remarks
  * The StockIA Platform API checks every rule again (unique email, current
- * password, at least one Administrator, admin-only endpoints); this store
- * maps its error codes to the i18n messages of the Web Application.
+ * password, at least one Administrator, admin-only endpoints, 5 wrong
+ * passwords lock the account for 15 minutes); this store maps its error
+ * codes to the i18n messages of the Web Application.
  */
 export const useIamStore = defineStore('iam', () => {
   const stored = loadSession();
@@ -55,6 +63,22 @@ export const useIamStore = defineStore('iam', () => {
   }
 
   /**
+   * Opens the session with a user resource that carries its JWT (sign-in or
+   * restaurant registration).
+   *
+   * @param {Object} resource authenticated user returned by the API
+   * @returns {User}
+   */
+  function startSession(resource) {
+    const user = UserAssembler.toEntityFromResource(resource);
+    setSession(user, resource.token);
+    return user;
+  }
+
+  /**
+   * Login Controller + Account Lock Service: after 5 wrong passwords in a row
+   * the API locks the account for 15 minutes.
+   *
    * @param {string} email
    * @param {string} password
    * @returns {Promise<User>}
@@ -62,30 +86,16 @@ export const useIamStore = defineStore('iam', () => {
   async function signIn(email, password) {
     try {
       const { data } = await iamApi.signIn({ email: email.trim().toLowerCase(), password });
-      const user = UserAssembler.toEntityFromResource(data);
-      setSession(user, data.token);
-      return user;
+      return startSession(data);
     } catch (error) {
-      throw toBusinessRuleError(error, IAM_ERRORS);
-    }
-  }
-
-  /**
-   * Registers the restaurant and its owner as the first Administrator (the
-   * API also gives it the free plan) and signs in.
-   *
-   * @param {{fullName: string, restaurantName: string, email: string, password: string}} form
-   * @returns {Promise<User>}
-   */
-  async function signUp({ fullName, restaurantName, email, password }) {
-    try {
-      const { data } = await iamApi.signUp({
-        fullName: fullName.trim(), restaurantName: restaurantName.trim(), email: email.trim().toLowerCase(), password,
-      });
-      const user = UserAssembler.toEntityFromResource(data);
-      setSession(user, data.token);
-      return user;
-    } catch (error) {
+      const problem = problemOf(error);
+      if (problem?.title === 'AccountLocked') {
+        throw new BusinessRuleError('iam.errors.account-locked', { minutes: problem.details?.minutesLeft ?? 15 });
+      }
+      const remaining = problem?.details?.remainingAttempts;
+      if (problem?.title === 'InvalidCredentials' && Number.isInteger(remaining) && remaining <= WARN_ATTEMPTS_LEFT) {
+        throw new BusinessRuleError('iam.errors.invalid-credentials-attempts', { count: remaining });
+      }
       throw toBusinessRuleError(error, IAM_ERRORS);
     }
   }
@@ -93,6 +103,42 @@ export const useIamStore = defineStore('iam', () => {
   function signOut() {
     setSession(null);
     users.value = [];
+  }
+
+  /**
+   * Keeps the restaurant data shown with the user in sync after Restaurant
+   * Registration saves it.
+   *
+   * @param {{name: string, address: string, phone: string}} restaurant
+   */
+  function applyRestaurant({ name, address, phone }) {
+    if (!currentUser.value) return;
+    setSession(new User({ ...currentUser.value, restaurantName: name, restaurantAddress: address, restaurantPhone: phone }));
+  }
+
+  /**
+   * "Forgot your password?" (Password Reset Service): the API emails a
+   * recovery link. The answer is the same whether the email is registered or not.
+   *
+   * @param {string} email
+   * @returns {Promise<{sentTo: string, simulatedEmail: {resetLink: string, code: string, expiresAt: string}|null}>}
+   */
+  async function requestPasswordReset(email) {
+    const { data } = await iamApi.requestPasswordReset(email.trim().toLowerCase());
+    return { sentTo: data.sentTo, simulatedEmail: data.simulatedEmail ?? null };
+  }
+
+  /**
+   * Sets a new password with the code of the recovery link; it also unlocks the account.
+   *
+   * @param {{email: string, code: string, newPassword: string}} reset
+   */
+  async function resetPassword({ email, code, newPassword }) {
+    try {
+      await iamApi.resetPassword({ email: email.trim().toLowerCase(), code: String(code).trim(), newPassword });
+    } catch (error) {
+      throw toBusinessRuleError(error, IAM_ERRORS);
+    }
   }
 
   /**
@@ -114,27 +160,7 @@ export const useIamStore = defineStore('iam', () => {
   }
 
   /**
-   * Edits the restaurant data (Administrator only).
-   *
-   * @param {{restaurantName: string, restaurantAddress: string, restaurantPhone: string}} changes
-   * @returns {Promise<User>}
-   */
-  async function updateRestaurant({ restaurantName, restaurantAddress, restaurantPhone }) {
-    if (!isAdmin.value) throw new BusinessRuleError('iam.errors.admin-only');
-    try {
-      const { data } = await iamApi.updateRestaurant({
-        name: restaurantName.trim(), address: (restaurantAddress ?? '').trim(), phone: (restaurantPhone ?? '').trim(),
-      });
-      const updated = new User({ ...currentUser.value, restaurantName: data.name, restaurantAddress: data.address, restaurantPhone: data.phone });
-      setSession(updated);
-      return updated;
-    } catch (error) {
-      throw toBusinessRuleError(error, IAM_ERRORS);
-    }
-  }
-
-  /**
-   * Changes the password; the API verifies the current one first.
+   * Password Change Service: the API verifies the current password first.
    *
    * @param {{currentPassword: string, newPassword: string}} form
    */
@@ -194,6 +220,16 @@ export const useIamStore = defineStore('iam', () => {
     await loadUsers();
   }
 
+  /**
+   * Unlocks a member locked by wrong passwords (Account Lock Service).
+   *
+   * @param {User} user
+   */
+  async function unlockMember(user) {
+    await iamApi.unlockMember(user.id);
+    await loadUsers();
+  }
+
   /** @param {User} user */
   async function removeMember(user) {
     if (user.id === currentUser.value?.id) throw new BusinessRuleError('iam.errors.remove-self');
@@ -208,6 +244,7 @@ export const useIamStore = defineStore('iam', () => {
 
   return {
     currentUser, users, isAuthenticated, isAdmin, adminCount,
-    signIn, signUp, signOut, updateProfile, updateRestaurant, changePassword, loadUsers, inviteMember, canChangeRole, changeRole, removeMember,
+    signIn, startSession, signOut, applyRestaurant, requestPasswordReset, resetPassword, updateProfile, changePassword,
+    loadUsers, inviteMember, canChangeRole, changeRole, unlockMember, removeMember,
   };
 });

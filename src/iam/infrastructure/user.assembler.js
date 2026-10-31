@@ -10,7 +10,9 @@ import { User } from '../domain/model/user.entity.js';
  * @property {string} restaurantName
  * @property {string} [restaurantAddress]
  * @property {string} [restaurantPhone]
- * @property {string} [token] only in sign-in and sign-up responses
+ * @property {boolean} [locked]
+ * @property {string|null} [lockedUntil]
+ * @property {string} [token] only in sign-in and restaurant registration responses
  */
 
 /**

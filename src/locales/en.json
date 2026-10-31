@@ -109,7 +109,8 @@
       "submitting": "Signing in…",
       "no-account": "Don't have an account?",
       "go-to-sign-up": "Sign up",
-      "demo-title": "Demo accounts (password stockia123):"
+      "demo-title": "Demo accounts (password stockia123):",
+      "forgot-password": "Forgot your password?"
     },
     "sign-up": {
       "headline": "Set up your restaurant in minutes",
@@ -127,6 +128,38 @@
       "check-fields": "Check the form",
       "access-denied": "Access denied",
       "sign-up-failed": "The account was not created"
+    },
+    "forgot": {
+      "headline": "Recover your access",
+      "description": "We will email you a link to choose a new password.",
+      "title": "Forgot your password?",
+      "subtitle": "Enter the email of your StockIA account",
+      "submit": "Send recovery link",
+      "sent": "If {email} is registered, we sent it a link to reset the password.",
+      "demo-title": "Demo mode: copy of the email (the provider is simulated)",
+      "demo-code": "Code {code}",
+      "open-link": "Open the recovery link",
+      "back": "Back to sign in",
+      "error": "The link could not be sent",
+      "highlights": {
+        "link": "A recovery link is sent to your email",
+        "expires": "The link expires in 30 minutes",
+        "unlock": "Resetting the password also unlocks your account"
+      }
+    },
+    "reset": {
+      "headline": "Choose a new password",
+      "description": "Use the code of the recovery link we emailed you.",
+      "title": "New password",
+      "code": "6-digit code",
+      "new-password": "New password",
+      "confirm-password": "Confirm the new password",
+      "submit": "Save new password",
+      "new-link": "Request a new link",
+      "code-invalid": "Enter the 6-digit code of the link.",
+      "done": "Password updated",
+      "done-detail": "Sign in with your new password.",
+      "error": "The password was not changed"
     }
   },
   "iam": {
@@ -142,7 +175,10 @@
       "email-taken": "That email is already registered. Sign in or use another one.",
       "wrong-current-password": "The current password is not correct.",
       "same-password": "The new password must be different from the current one.",
-      "admin-only": "Only an Administrator can do this."
+      "admin-only": "Only an Administrator can do this.",
+      "account-locked": "Your account is locked for {minutes} more minute(s) after 5 wrong passwords. Try again later or reset your password.",
+      "invalid-credentials-attempts": "Incorrect email or password. Attempts left before the account is locked: {count}.",
+      "invalid-reset-code": "The recovery link is not valid or has expired. Request a new one."
     }
   },
   "team": {
@@ -162,7 +198,12 @@
     "remove-of": "Remove {name} from the team",
     "remove-title": "Remove member",
     "remove-confirm": "Remove {name} from the team?",
-    "removed": "{name} was removed from the team."
+    "removed": "{name} was removed from the team.",
+    "locked": "Locked",
+    "locked-hint": "Locked by 5 wrong passwords",
+    "unlock": "Unlock",
+    "unlock-of": "Unlock {name}",
+    "unlocked": "{name} can sign in again."
   },
   "inventory": {
     "title": "Inventory",
@@ -625,5 +666,23 @@
         "a": "Use the EN / ES buttons in the header. StockIA always opens in English."
       }
     }
+  },
+  "savings": {
+    "title": "Weekly savings",
+    "period": "{from} to {to}",
+    "estimated": "Estimated savings",
+    "estimated-note": "Rescued stock plus less waste than last week",
+    "rescued": "Stock rescued",
+    "rescued-note": "Used by sales in its last 3 days before expiring",
+    "waste": "Waste of the week",
+    "waste-down": "{amount} less than last week",
+    "waste-up": "{amount} more than last week",
+    "waste-same": "Same as last week",
+    "sales": "Sales of the week",
+    "portions": "{count} portion sold | {count} portions sold",
+    "top-rescued": "Most rescued supplies",
+    "wasted": "Expired with stock",
+    "none-rescued": "No stock was rescued this week.",
+    "none-wasted": "Nothing expired with stock this week."
   }
 }

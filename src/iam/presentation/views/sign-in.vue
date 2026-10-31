@@ -11,7 +11,7 @@ import FormField from '../../../shared/presentation/components/form-field.vue';
 import PasswordInput from '../../../shared/presentation/components/password-input.vue';
 
 /**
- * Sign-in view of the User & Access Management Bounded Context.
+ * Sign-in view of the Identity & Access Management Bounded Context.
  *
  * @remarks
  * Email and password are mandatory. When a field is wrong (e.g. an invalid
@@ -97,6 +97,8 @@ async function submit() {
             </template>
           </form-field>
 
+          <p class="forgot-link"><router-link :to="{ name: 'forgot-password' }">{{ t('auth.sign-in.forgot-password') }}</router-link></p>
+
           <pv-button type="submit" class="w-full mt-2" :label="loading ? t('auth.sign-in.submitting') : t('auth.sign-in.submit')" :loading="loading" />
 
           <div class="demo-box">
@@ -125,5 +127,7 @@ async function submit() {
 .demo-title { font-size: .8rem; margin-bottom: .5rem; }
 .demo-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
 .switch-link { text-align: center; font-size: .9rem; margin: 1rem 0 0; }
+.forgot-link { text-align: right; font-size: .85rem; margin: -.25rem 0 .5rem; }
+.forgot-link a { color: var(--color-accent-strong); font-weight: 600; }
 .switch-link a { color: var(--color-accent-strong); font-weight: 700; }
 </style>

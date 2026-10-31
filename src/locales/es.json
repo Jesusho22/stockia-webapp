@@ -109,7 +109,8 @@
       "submitting": "Ingresando…",
       "no-account": "¿No tienes cuenta?",
       "go-to-sign-up": "Regístrate",
-      "demo-title": "Cuentas demo (contraseña stockia123):"
+      "demo-title": "Cuentas demo (contraseña stockia123):",
+      "forgot-password": "¿Olvidaste tu contraseña?"
     },
     "sign-up": {
       "headline": "Configura tu restaurante en minutos",
@@ -127,6 +128,38 @@
       "check-fields": "Revisa el formulario",
       "access-denied": "Acceso denegado",
       "sign-up-failed": "No se creó la cuenta"
+    },
+    "forgot": {
+      "headline": "Recupera tu acceso",
+      "description": "Te enviaremos un enlace por correo para elegir una nueva contraseña.",
+      "title": "¿Olvidaste tu contraseña?",
+      "subtitle": "Ingresa el correo de tu cuenta de StockIA",
+      "submit": "Enviar enlace de recuperación",
+      "sent": "Si {email} está registrado, le enviamos un enlace para restablecer la contraseña.",
+      "demo-title": "Modo demo: copia del correo (el proveedor es simulado)",
+      "demo-code": "Código {code}",
+      "open-link": "Abrir el enlace de recuperación",
+      "back": "Volver a iniciar sesión",
+      "error": "No se pudo enviar el enlace",
+      "highlights": {
+        "link": "Te enviamos un enlace de recuperación a tu correo",
+        "expires": "El enlace vence en 30 minutos",
+        "unlock": "Restablecer la contraseña también desbloquea tu cuenta"
+      }
+    },
+    "reset": {
+      "headline": "Elige una nueva contraseña",
+      "description": "Usa el código del enlace de recuperación que te enviamos.",
+      "title": "Nueva contraseña",
+      "code": "Código de 6 dígitos",
+      "new-password": "Nueva contraseña",
+      "confirm-password": "Confirma la nueva contraseña",
+      "submit": "Guardar nueva contraseña",
+      "new-link": "Solicitar un nuevo enlace",
+      "code-invalid": "Ingresa el código de 6 dígitos del enlace.",
+      "done": "Contraseña actualizada",
+      "done-detail": "Inicia sesión con tu nueva contraseña.",
+      "error": "No se cambió la contraseña"
     }
   },
   "iam": {
@@ -142,7 +175,10 @@
       "email-taken": "Ese correo ya está registrado. Inicia sesión o usa otro.",
       "wrong-current-password": "La contraseña actual no es correcta.",
       "same-password": "La nueva contraseña debe ser distinta de la actual.",
-      "admin-only": "Solo un Administrador puede hacer esto."
+      "admin-only": "Solo un Administrador puede hacer esto.",
+      "account-locked": "Tu cuenta está bloqueada {minutes} minuto(s) más por 5 contraseñas incorrectas. Inténtalo más tarde o recupera tu contraseña.",
+      "invalid-credentials-attempts": "Correo o contraseña incorrectos. Intentos restantes antes de bloquear la cuenta: {count}.",
+      "invalid-reset-code": "El enlace de recuperación no es válido o ya venció. Solicita uno nuevo."
     }
   },
   "team": {
@@ -162,7 +198,12 @@
     "remove-of": "Quitar a {name} del equipo",
     "remove-title": "Quitar integrante",
     "remove-confirm": "¿Quitar a {name} del equipo?",
-    "removed": "{name} fue retirado del equipo."
+    "removed": "{name} fue retirado del equipo.",
+    "locked": "Bloqueado",
+    "locked-hint": "Bloqueado por 5 contraseñas incorrectas",
+    "unlock": "Desbloquear",
+    "unlock-of": "Desbloquear a {name}",
+    "unlocked": "{name} ya puede iniciar sesión."
   },
   "inventory": {
     "title": "Inventario",
@@ -625,5 +666,23 @@
         "a": "Usa los botones EN / ES del encabezado. StockIA siempre abre en inglés."
       }
     }
+  },
+  "savings": {
+    "title": "Ahorro semanal",
+    "period": "Del {from} al {to}",
+    "estimated": "Ahorro estimado",
+    "estimated-note": "Stock rescatado más la merma que bajó frente a la semana pasada",
+    "rescued": "Stock rescatado",
+    "rescued-note": "Usado en ventas en sus últimos 3 días antes de vencer",
+    "waste": "Merma de la semana",
+    "waste-down": "{amount} menos que la semana pasada",
+    "waste-up": "{amount} más que la semana pasada",
+    "waste-same": "Igual que la semana pasada",
+    "sales": "Ventas de la semana",
+    "portions": "{count} porción vendida | {count} porciones vendidas",
+    "top-rescued": "Insumos más rescatados",
+    "wasted": "Vencidos con stock",
+    "none-rescued": "Esta semana no se rescató stock.",
+    "none-wasted": "Esta semana no venció nada con stock."
   }
 }

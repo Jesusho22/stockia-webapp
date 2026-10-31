@@ -3,30 +3,32 @@ import { BaseEndpoint } from '../../shared/infrastructure/base-endpoint.js';
 
 const authenticationEndpointPath = import.meta.env.VITE_AUTHENTICATION_ENDPOINT_PATH ?? '/authentication';
 const usersEndpointPath = import.meta.env.VITE_USERS_ENDPOINT_PATH;
-const restaurantsEndpointPath = import.meta.env.VITE_RESTAURANTS_ENDPOINT_PATH ?? '/restaurants';
 
 /**
- * Infrastructure adapter of the User & Access Management Bounded Context over
- * the StockIA Platform API: sign-in/sign-up return the user with a JWT; the
- * password never travels back from the API.
+ * Infrastructure adapter of the Identity & Access Management Bounded Context
+ * over the StockIA Platform API: sign-in returns the user with a JWT (Login
+ * Controller), the password recovery goes by email (Password Reset Service)
+ * and the team is managed by the Administrator. The password never travels
+ * back from the API.
  */
 export class IamApi extends BaseApi {
   #authenticationEndpoint;
   #usersEndpoint;
-  #restaurantsEndpoint;
 
   constructor() {
     super();
     this.#authenticationEndpoint = new BaseEndpoint(this, authenticationEndpointPath);
     this.#usersEndpoint = new BaseEndpoint(this, usersEndpointPath);
-    this.#restaurantsEndpoint = new BaseEndpoint(this, restaurantsEndpointPath);
   }
 
   /** @param {{email: string, password: string}} credentials */
   signIn(credentials) { return this.#authenticationEndpoint.post('sign-in', credentials); }
 
-  /** @param {{fullName: string, restaurantName: string, email: string, password: string}} form */
-  signUp(form) { return this.#authenticationEndpoint.post('sign-up', form); }
+  /** "Forgot your password?": the API emails a recovery link. @param {string} email */
+  requestPasswordReset(email) { return this.#authenticationEndpoint.post('password-reset-requests', { email }); }
+
+  /** @param {{email: string, code: string, newPassword: string}} reset */
+  resetPassword(reset) { return this.#authenticationEndpoint.post('password-resets', reset); }
 
   /** Team of the restaurant (Administrator). */
   getUsers() { return this.#usersEndpoint.getAll(); }
@@ -43,11 +45,9 @@ export class IamApi extends BaseApi {
   /** @param {number} id @param {string} role */
   changeRole(id, role) { return this.#usersEndpoint.patch(`${id}/role`, { role }); }
 
+  /** Unlocks a member locked by wrong passwords (Administrator). @param {number} id */
+  unlockMember(id) { return this.#usersEndpoint.post(`${id}/unlock`); }
+
   /** @param {number} id */
   removeMember(id) { return this.#usersEndpoint.delete(id); }
-
-  getRestaurant() { return this.#restaurantsEndpoint.getPath('current'); }
-
-  /** @param {{name: string, address: string, phone: string}} restaurant */
-  updateRestaurant(restaurant) { return this.#restaurantsEndpoint.put('current', restaurant); }
 }
