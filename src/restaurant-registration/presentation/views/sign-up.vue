@@ -64,7 +64,7 @@ async function submit() {
   try {
     await restaurantRegistrationStore.register(form);
     toast.add({ severity: 'success', summary: t('auth.sign-up.welcome', { name: form.fullName.trim() }), life: 3000 });
-    router.push({ name: 'dashboard' });
+    router.push({ name: 'analytics-dashboard' });
   } catch (error) {
     errorMessage.value = toErrorMessage(error, 'auth.sign-up.error');
     toast.add({ severity: 'error', summary: t('auth.errors.sign-up-failed'), detail: t(errorMessage.value.code, errorMessage.value.params), life: 5000 });
