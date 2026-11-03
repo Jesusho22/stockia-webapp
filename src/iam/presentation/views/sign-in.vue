@@ -35,7 +35,7 @@ const loading = ref(false);
 const errorMessage = ref(null);
 
 const errors = computed(() => (submitted.value ? validate(form, { email: [email], password: [required] }) : {}));
-const highlights = computed(() => [t('auth.highlights.deduction'), t('auth.highlights.forecast'), t('auth.highlights.alerts')]);
+const highlights = computed(() => [t('auth.highlights.deduction'), t('auth.highlights.forecast'), t('auth.highlights.notifications-messaging')]);
 
 /** @param {'admin'|'employee'} account */
 function useDemo(account) {

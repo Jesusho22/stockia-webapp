@@ -33,7 +33,7 @@ export const AlertChannel = Object.freeze({
  *
  * @remarks
  * An alert counts as delivered (`AlertDelivered`) only after a successful
- * attempt on every required channel: CRITICAL alerts require WhatsApp AND
+ * attempt on every required channel: CRITICAL notifications-messaging require WhatsApp AND
  * email; the rest only their main channel. An alert can be marked as attended
  * only once it was delivered.
  */

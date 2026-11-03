@@ -7,10 +7,15 @@ import { useAlertsStore } from '../../application/alerts.store.js';
 import { AlertChannel, AlertSeverity, AlertType } from '../../domain/model/alert.entity.js';
 import { toErrorMessage } from '../../../shared/domain/model/business-rule-error.js';
 import { minLength, required, validate } from '../../../shared/presentation/validation.js';
-import AlertSeverityTag from '../components/alert-severity-tag.vue';
 import PageHeader from '../../../shared/presentation/components/page-header.vue';
 import FormField from '../../../shared/presentation/components/form-field.vue';
+import AlertSeverityTag from '../components/alert-severity-tag.vue';
 
+/**
+ * Alerts view: low stock, expiring supplies and equipment faults delivered by
+ * WhatsApp and email. Critical alerts must reach both channels before they
+ * can be marked as attended.
+ */
 const { t, d } = useI18n();
 const toast = useToast();
 const confirm = useConfirm();
@@ -26,14 +31,10 @@ const saving = ref(false);
 const emptyForm = () => ({ type: AlertType.LOW_STOCK, severity: AlertSeverity.WARNING, message: '', channel: AlertChannel.WHATSAPP });
 const form = reactive(emptyForm());
 
-const typeOptions = computed(() => Object.values(AlertType).map((value) =>
-    ({ value, label: t(`alerts.type.${value}`) })));
-const severityOptions = computed(() => Object.values(AlertSeverity).map((value) =>
-    ({ value, label: t(`alerts.severity.${value}`) })));
-const channelOptions = computed(() => Object.values(AlertChannel).map((value) =>
-    ({ value, label: t(`alerts.channel.${value}`) })));
-const errors = computed(() =>
-    (submitted.value ? validate(form, { type: [required], severity: [required], message: [required, minLength(5)], channel: [required] }) : {}));
+const typeOptions = computed(() => Object.values(AlertType).map((value) => ({ value, label: t(`alerts.type.${value}`) })));
+const severityOptions = computed(() => Object.values(AlertSeverity).map((value) => ({ value, label: t(`alerts.severity.${value}`) })));
+const channelOptions = computed(() => Object.values(AlertChannel).map((value) => ({ value, label: t(`alerts.channel.${value}`) })));
+const errors = computed(() => (submitted.value ? validate(form, { type: [required], severity: [required], message: [required, minLength(5)], channel: [required] }) : {}));
 
 function showError(error, fallback) {
   const { code, params } = toErrorMessage(error, fallback);
@@ -184,9 +185,9 @@ function remove(alert) {
       </form-field>
     </form>
     <template #footer>
-      <pv-button :label="t('common.cancel')" severity="secondary" outlined @click="dialogVisible = false" />
-      <pv-button type="submit" form="alert-form" icon="pi pi-save" :label="editing ? t('common.save-changes') : t('alerts.create')" :loading="saving" />
-    </template>
+    <pv-button :label="t('common.cancel')" severity="secondary" outlined @click="dialogVisible = false" />
+    <pv-button type="submit" form="alert-form" icon="pi pi-save" :label="editing ? t('common.save-changes') : t('alerts.create')" :loading="saving" />
+  </template>
   </pv-dialog>
 </template>
 
