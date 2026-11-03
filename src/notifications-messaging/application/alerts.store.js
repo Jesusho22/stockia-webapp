@@ -49,7 +49,7 @@ export const useAlertsStore = defineStore('alerts', () => {
     }
 
     async function acknowledge(alert) {
-        if (!alert.delivered) throw new BusinessRuleError('alerts.errors.not-delivered');
+        if (!alert.delivered) throw new BusinessRuleError('notifications-messaging.errors.not-delivered');
         await persist(new Alert({ ...alert, acknowledged: true }));
     }
 

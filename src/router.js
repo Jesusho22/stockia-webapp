@@ -33,11 +33,11 @@ const routes = [
             { path: 'forecast', name: 'forecast', component: () =>
                     import('./demand-forecasting/presentation/views/forecast-dashboard.vue') },
             { path: 'alerts', name: 'alerts', component: () =>
-                    import('./alerts/presentation/views/alerts-list.vue') },
+                    import('./notifications-messaging/presentation/views/alerts-list.vue') },
             {
                 path: 'recommendations',
                 name: 'recommendations',
-                component: () => import('./alerts/presentation/views/recommendations-list.vue'),
+                component: () => import('./notifications-messaging/presentation/views/recommendations-list.vue'),
                 meta: { adminOnly: true },
             },
             { path: 'roles', name: 'roles', component: () =>

@@ -29,7 +29,7 @@ const mainItems = [
   { key: 'recipes', to: '/app/recipes', icon: 'pi pi-book' },
   { key: 'sales', to: '/app/sales', icon: 'pi pi-receipt' },
   { key: 'forecast', to: '/app/forecast', icon: 'pi pi-chart-line' },
-  { key: 'alerts', to: '/app/alerts', icon: 'pi pi-bell' },
+  { key: 'alerts', to: '/app/notifications-messaging', icon: 'pi pi-bell' },
   { key: 'recommendations', to: '/app/recommendations', icon: 'pi pi-lightbulb' },
   { key: 'roles', to: '/app/roles', icon: 'pi pi-users' },
 ];

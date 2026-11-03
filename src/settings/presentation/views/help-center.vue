@@ -20,7 +20,7 @@ const STEPS = [
   { key: 'recipes', icon: 'pi pi-book', to: '/app/recipes' },
   { key: 'sell', icon: 'pi pi-shopping-cart', to: '/app/recipes' },
   { key: 'sales', icon: 'pi pi-receipt', to: '/app/sales' },
-  { key: 'alerts', icon: 'pi pi-bell', to: '/app/alerts' },
+  { key: 'alerts', icon: 'pi pi-bell', to: '/app/notifications-messaging' },
   { key: 'forecast', icon: 'pi pi-chart-line', to: '/app/forecast' },
   { key: 'recommendations', icon: 'pi pi-lightbulb', to: '/app/recommendations', adminOnly: true },
   { key: 'team', icon: 'pi pi-users', to: '/app/roles', adminOnly: true },
