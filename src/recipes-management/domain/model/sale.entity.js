@@ -39,7 +39,7 @@ export const SaleStatus = Object.freeze({
  */
 
 /**
- * Aggregate root of the Receipts Management Bounded Context.
+ * Aggregate root of the Recipes Management Bounded Context.
  */
 export class Sale {
   /**
