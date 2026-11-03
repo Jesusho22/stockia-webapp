@@ -8,7 +8,7 @@
  */
 
 /**
- * Entity of the Subscription & Billing Bounded Context: a plan of the catalog.
+ * Entity of the Subscription & Payments Bounded Context: a plan of the catalog.
  */
 export class Plan {
     /**

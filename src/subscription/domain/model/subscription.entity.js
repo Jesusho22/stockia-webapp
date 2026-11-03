@@ -33,7 +33,7 @@ export const BILLING_PERIOD_DAYS = 30;
  */
 
 /**
- * Aggregate root of the Subscription & Billing Bounded Context: the plan the
+ * Aggregate root of the Subscription & Payments Bounded Context: the plan the
  * restaurant is subscribed to.
  */
 export class Subscription {
