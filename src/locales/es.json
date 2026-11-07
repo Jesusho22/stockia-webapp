@@ -319,7 +319,7 @@
   },
   "forecast": {
     "title": "Predicción de demanda",
-    "description": "Proyección de ventas por plato para los próximos 7 días, combinando el histórico de ventas y el clima.",
+    "description": "Unidades por plato para los próximos 7 días, predichas por un modelo de Machine Learning con el historial de ventas, feriados, quincenas y el pronóstico del clima.",
     "generate": "Generar nueva predicción (IA)",
     "generating": "Generando…",
     "generated": "Se generó una nueva predicción.",
@@ -334,8 +334,13 @@
     "weather": {
       "sunny": "Soleado",
       "cloudy": "Nublado",
-      "light-rain": "Lluvia ligera"
-    },  
+      "light-rain": "Lluvia ligera",
+      "rain": "Lluvia"
+    },
+    "weather-source": {
+      "open-meteo": "Clima: pronóstico de Open-Meteo",
+      "climatology": "Clima: climatología de Lima"
+    },
    "method-label": "Método",
    "method": { "ml": "Modelo ML v{version}", "baseline": "Promedio semanal (poco historial)" },
    "errors": { "no-dishes": "Crea al menos una receta antes de generar una predicción." }
