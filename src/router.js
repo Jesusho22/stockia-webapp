@@ -31,13 +31,13 @@ const routes = [
             { path: 'sales', name: 'sales', component: () =>
                     import('./receipts-management/presentation/views/receipts-history.vue'), },
             { path: 'forecast', name: 'forecast', component: () =>
-                    import('./demand-forecasting/presentation/views/forecast-dashboard.vue') },
+                    import('./ml-recommendations/presentation/views/forecast-dashboard.vue') },
             { path: 'alerts', name: 'alerts', component: () =>
                     import('./notifications-messaging/presentation/views/alerts-list.vue') },
             {
                 path: 'recommendations',
                 name: 'recommendations',
-                component: () => import('./notifications-messaging/presentation/views/recommendations-list.vue'),
+                component: () => import('./ml-recommendations/presentation/views/recommendations-list.vue'),
                 meta: { adminOnly: true },
             },
             { path: 'roles', name: 'roles', component: () =>
