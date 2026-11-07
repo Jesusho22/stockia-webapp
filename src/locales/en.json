@@ -335,7 +335,10 @@
       "sunny": "Sunny",
       "cloudy": "Cloudy",
       "light-rain": "Light rain"
-    }
+    },
+  "method-label": "Method",
+   "method": { "ml": "ML model v{version}", "baseline": "Weekly average (little history)" },
+   "errors": { "no-dishes": "Create at least one recipe before generating a forecast." }
   },
   "alerts": {
     "title": "Alerts",
