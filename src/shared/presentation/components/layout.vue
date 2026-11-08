@@ -24,7 +24,7 @@ const router = useRouter();
 const iamStore = useIamStore();
 
 const mainItems = [
-  { key: 'dashboard', to: '/app/dashboard', icon: 'pi pi-chart-bar' },
+  { key: 'analytics-dashboard', to: '/app/analytics-dashboard', icon: 'pi pi-chart-bar' },
   { key: 'inventory', to: '/app/inventory', icon: 'pi pi-box' },
   { key: 'recipes', to: '/app/recipes', icon: 'pi pi-book' },
   { key: 'sales', to: '/app/sales', icon: 'pi pi-receipt' },
