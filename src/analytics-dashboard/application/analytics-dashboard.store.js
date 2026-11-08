@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { AnalyticsDashboardApi } from '../infraestructure/analytics-dashboard-api.js';
-import { WeeklySavingsAssembler } from '../infraestructure/weekly-savings.assembler.js';
+import { AnalyticsDashboardApi } from '../infrastructure/analytics-dashboard-api.js';
+import { WeeklySavingsAssembler } from '../infrastructure/weekly-savings.assembler.js';
 
 const analyticsDashboardApi = new AnalyticsDashboardApi();
 
