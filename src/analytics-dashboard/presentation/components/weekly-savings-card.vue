@@ -1,8 +1,8 @@
 <script setup>
-import {computed} from 'vue';
-import {useI18n} from 'vue-i18n';
-import {useMoney} from '../../../shared/presentation/composables/use-money.js';
-import {useQuantity} from '../../../shared/presentation/composables/use-quantity.js';
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { useMoney } from '../../../shared/presentation/composables/use-money.js';
+import { useQuantity } from '../../../shared/presentation/composables/use-quantity.js';
 
 /**
  * Weekly savings (Weekly Savings Calculator): stock used before it expired
@@ -10,23 +10,17 @@ import {useQuantity} from '../../../shared/presentation/composables/use-quantity
  */
 const props = defineProps({
   /** @type {import('vue').PropType<import('../../domain/model/weekly-savings.entity.js').WeeklySavings>} */
-  savings: {type: Object, required: true},
+  savings: { type: Object, required: true },
 });
 
-const {t} = useI18n();
-const {formatMoney} = useMoney();
-const {formatQuantity} = useQuantity();
+const { t } = useI18n();
+const { formatMoney } = useMoney();
+const { formatQuantity } = useQuantity();
 
 const wasteTrend = computed(() => {
-  if (props.savings.wasteReduction > 0) return {
-    label: t('savings.waste-down', {amount: formatMoney(props.savings.wasteReduction)}),
-    css: 'is-success'
-  };
-  if (props.savings.wasteReduction < 0) return {
-    label: t('savings.waste-up', {amount: formatMoney(-props.savings.wasteReduction)}),
-    css: 'is-danger'
-  };
-  return {label: t('savings.waste-same'), css: ''};
+  if (props.savings.wasteReduction > 0) return { label: t('savings.waste-down', { amount: formatMoney(props.savings.wasteReduction) }), css: 'is-success' };
+  if (props.savings.wasteReduction < 0) return { label: t('savings.waste-up', { amount: formatMoney(-props.savings.wasteReduction) }), css: 'is-danger' };
+  return { label: t('savings.waste-same'), css: '' };
 });
 </script>
 
@@ -34,7 +28,7 @@ const wasteTrend = computed(() => {
   <section class="surface-card savings-card" aria-labelledby="weekly-savings-title" data-testid="weekly-savings">
     <header class="savings-header">
       <h2 id="weekly-savings-title">{{ t('savings.title') }}</h2>
-      <span class="savings-period">{{ t('savings.period', {from: savings.from, to: savings.to}) }}</span>
+      <span class="savings-period">{{ t('savings.period', { from: savings.from, to: savings.to }) }}</span>
     </header>
 
     <div class="savings-grid">
@@ -56,7 +50,7 @@ const wasteTrend = computed(() => {
       <div>
         <p class="stat-label">{{ t('savings.sales') }}</p>
         <p class="stat-value">{{ formatMoney(savings.revenue) }}</p>
-        <p class="savings-note">{{ t('savings.portions', {count: savings.portionsSold}, savings.portionsSold) }}</p>
+        <p class="savings-note">{{ t('savings.portions', { count: savings.portionsSold }, savings.portionsSold) }}</p>
       </div>
     </div>
 
@@ -66,9 +60,7 @@ const wasteTrend = computed(() => {
         <p v-if="savings.topRescued.length === 0" class="savings-note">{{ t('savings.none-rescued') }}</p>
         <ul v-else>
           <li v-for="line in savings.topRescued" :key="`r-${line.itemName}-${line.unit}`">
-            <span>{{ line.itemName }} · {{
-                formatQuantity(line.quantity, line.unit)
-              }}</span><strong>{{ formatMoney(line.value) }}</strong>
+            <span>{{ line.itemName }} · {{ formatQuantity(line.quantity, line.unit) }}</span><strong>{{ formatMoney(line.value) }}</strong>
           </li>
         </ul>
       </div>
@@ -77,9 +69,7 @@ const wasteTrend = computed(() => {
         <p v-if="savings.wasted.length === 0" class="savings-note">{{ t('savings.none-wasted') }}</p>
         <ul v-else>
           <li v-for="line in savings.wasted" :key="`w-${line.itemName}-${line.unit}`">
-            <span>{{ line.itemName }} · {{
-                formatQuantity(line.quantity, line.unit)
-              }}</span><strong>{{ formatMoney(line.value) }}</strong>
+            <span>{{ line.itemName }} · {{ formatQuantity(line.quantity, line.unit) }}</span><strong>{{ formatMoney(line.value) }}</strong>
           </li>
         </ul>
       </div>
@@ -103,7 +93,9 @@ const wasteTrend = computed(() => {
 .savings-period {
   font-size: .85rem;
   color: var(--color-muted, #64748b);
-  /*--color-text-muted?? */
+  /**
+  --color-text-muted?
+   */
 }
 
 .savings-grid {
