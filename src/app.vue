@@ -1,11 +1,27 @@
 <script setup>
-import { watch, watchEffect } from 'vue';
+import { onBeforeUnmount, onMounted, watch, watchEffect } from 'vue';
+import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useToast } from 'primevue/usetoast';
-import { drainNotifications, notificationQueue } from './shared/application/notifications.js';
+import { drainNotifications, notificationQueue, notify } from './shared/application/notifications.js';
+import { SESSION_EXPIRED_EVENT } from './shared/infrastructure/base-api.js';
+import { useIamStore } from './iam/application/iam.store.js';
 
 const { locale, t } = useI18n();
 const toast = useToast();
+const router = useRouter();
+const iamStore = useIamStore();
+
+/** The API rejected the token: sign the user out and send them to sign-in. */
+function onSessionExpired() {
+  if (!iamStore.isAuthenticated) return;
+  iamStore.signOut();
+  notify({ severity: 'warn', summary: 'access.session-expired', detail: 'access.session-required-detail' });
+  router.push({ name: 'sign-in', query: { redirect: router.currentRoute.value.fullPath } });
+}
+
+onMounted(() => window.addEventListener(SESSION_EXPIRED_EVENT, onSessionExpired));
+onBeforeUnmount(() => window.removeEventListener(SESSION_EXPIRED_EVENT, onSessionExpired));
 
 watchEffect(() => {
   document.documentElement.lang = locale.value;
