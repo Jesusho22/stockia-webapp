@@ -17,6 +17,7 @@ export const useAlertsStore = defineStore('alerts', () => {
     const alertsLoaded = ref(false);
 
     const pendingCount = computed(() => alerts.value.filter((alert) => !alert.acknowledged).length);
+    // Newest first: by creation date, then by id (the API assigns increasing ids).
     const recentAlerts = computed(() => [...alerts.value].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)) || Number(b.id) - Number(a.id)));
 
     async function loadAlerts() {
@@ -32,6 +33,7 @@ export const useAlertsStore = defineStore('alerts', () => {
 
     /**
      * Creates an alert manually. The API sends it by its main channel (first delivery attempt).
+     *
      * @param {{type: string, severity: string, message: string, channel: string}} form
      */
     async function createAlert({ type, severity, message, channel }) {
@@ -56,6 +58,7 @@ export const useAlertsStore = defineStore('alerts', () => {
 
     /**
      * Marks an alert as attended; it must be delivered on every required channel first.
+     *
      * @param {Alert} alert
      */
     async function acknowledge(alert) {
@@ -70,6 +73,7 @@ export const useAlertsStore = defineStore('alerts', () => {
 
     /**
      * New delivery attempt on the pending channel (done by the API).
+     *
      * @param {Alert} alert
      * @returns {Promise<string|null>} channel delivered in this attempt
      */
