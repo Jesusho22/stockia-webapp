@@ -46,7 +46,7 @@ async function choose(plan, method) {
   <page-header :title="t('plans.title')" :description="t('plans.description')">
     <template #actions>
       <pv-tag v-if="subscriptionStore.currentPlan" severity="success"
-              :value="t('plans.active', { plan: subscriptionStore.currentPlan.name })" />
+        :value="t('plans.active', { plan: subscriptionStore.currentPlan.name })" />
     </template>
   </page-header>
 
@@ -73,11 +73,11 @@ async function choose(plan, method) {
         <pv-tag v-if="subscriptionStore.current?.planId === plan.id" severity="success" :value="t('plans.current')" class="align-self-start mb-2" />
         <div class="plan-actions">
           <pv-button :label="t('plans.pay-with', { provider: 'Stripe' })" icon="pi pi-credit-card"
-                     :loading="processing === `${plan.id}-${PaymentMethod.STRIPE}`" :disabled="processing !== null"
-                     :aria-label="t('plans.pay-plan-with', { plan: plan.name, provider: 'Stripe' })" @click="choose(plan, PaymentMethod.STRIPE)" />
+            :loading="processing === `${plan.id}-${PaymentMethod.STRIPE}`" :disabled="processing !== null"
+            :aria-label="t('plans.pay-plan-with', { plan: plan.name, provider: 'Stripe' })" @click="choose(plan, PaymentMethod.STRIPE)" />
           <pv-button :label="t('plans.pay-with', { provider: 'PayPal' })" icon="pi pi-paypal" severity="secondary" outlined
-                     :loading="processing === `${plan.id}-${PaymentMethod.PAYPAL}`" :disabled="processing !== null"
-                     :aria-label="t('plans.pay-plan-with', { plan: plan.name, provider: 'PayPal' })" @click="choose(plan, PaymentMethod.PAYPAL)" />
+            :loading="processing === `${plan.id}-${PaymentMethod.PAYPAL}`" :disabled="processing !== null"
+            :aria-label="t('plans.pay-plan-with', { plan: plan.name, provider: 'PayPal' })" @click="choose(plan, PaymentMethod.PAYPAL)" />
         </div>
       </article>
     </li>
