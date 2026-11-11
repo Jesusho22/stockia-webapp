@@ -378,13 +378,18 @@
       "light-rain": "Lluvia ligera",
       "rain": "Lluvia"
     },
+    "method-label": "Método",
+    "method": {
+      "ml": "Modelo ML v{version}",
+      "baseline": "Promedio semanal (poco historial)"
+    },
     "weather-source": {
       "open-meteo": "Clima: pronóstico de Open-Meteo",
       "climatology": "Clima: climatología de Lima"
     },
-   "method-label": "Método",
-   "method": { "ml": "Modelo ML v{version}", "baseline": "Promedio semanal (poco historial)" },
-   "errors": { "no-dishes": "Crea al menos una receta antes de generar una predicción." }
+    "errors": {
+      "no-dishes": "Crea al menos una receta antes de generar una predicción."
+    }
   },
   "alerts": {
     "title": "Alertas",
@@ -661,5 +666,23 @@
         "a": "Usa los botones EN / ES del encabezado. StockIA siempre abre en inglés."
       }
     }
+  },
+  "savings": {
+    "title": "Ahorro semanal",
+    "period": "Del {from} al {to}",
+    "estimated": "Ahorro estimado",
+    "estimated-note": "Stock rescatado más la merma que bajó frente a la semana pasada",
+    "rescued": "Stock rescatado",
+    "rescued-note": "Usado en ventas en sus últimos 3 días antes de vencer",
+    "waste": "Merma de la semana",
+    "waste-down": "{amount} menos que la semana pasada",
+    "waste-up": "{amount} más que la semana pasada",
+    "waste-same": "Igual que la semana pasada",
+    "sales": "Ventas de la semana",
+    "portions": "{count} porción vendida | {count} porciones vendidas",
+    "top-rescued": "Insumos más rescatados",
+    "wasted": "Vencidos con stock",
+    "none-rescued": "Esta semana no se rescató stock.",
+    "none-wasted": "Esta semana no venció nada con stock."
   }
 }
