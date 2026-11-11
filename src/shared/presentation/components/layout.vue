@@ -24,12 +24,12 @@ const router = useRouter();
 const iamStore = useIamStore();
 
 const mainItems = [
-  { key: 'analytics-dashboard', to: '/app/analytics-dashboard', icon: 'pi pi-chart-bar' },
+  { key: 'dashboard', to: '/app/dashboard', icon: 'pi pi-chart-bar' },
   { key: 'inventory', to: '/app/inventory', icon: 'pi pi-box' },
   { key: 'recipes', to: '/app/recipes', icon: 'pi pi-book' },
   { key: 'sales', to: '/app/sales', icon: 'pi pi-receipt' },
   { key: 'forecast', to: '/app/forecast', icon: 'pi pi-chart-line' },
-  { key: 'alerts', to: '/app/notifications-messaging', icon: 'pi pi-bell' },
+  { key: 'alerts', to: '/app/alerts', icon: 'pi pi-bell' },
   { key: 'recommendations', to: '/app/recommendations', icon: 'pi pi-lightbulb' },
   { key: 'roles', to: '/app/roles', icon: 'pi pi-users' },
 ];
