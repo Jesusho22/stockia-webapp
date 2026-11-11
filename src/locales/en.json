@@ -27,14 +27,14 @@
     "sidebar": "StockIA sidebar",
     "main-navigation": "Main navigation",
     "open-menu": "Open navigation menu",
-    "environment-tag": "Mock API · sample data",
+    "environment-tag": "StockIA Platform API",
     "close-menu": "Close navigation menu",
     "go-home": "StockIA, go to the dashboard",
     "open-settings": "Account settings of {name}"
   },
   "footer": {
     "made-by": "Made by the {team} team.",
-    "data-source": "Sample data served by a json-server mock API while the RESTful API is built."
+    "data-source": "Data served by the StockIA Platform API (ASP.NET Core) with a MySQL database."
   },
   "common": {
     "actions": "Actions",
