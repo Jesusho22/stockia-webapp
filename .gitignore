@@ -20,9 +20,6 @@ pnpm-debug.log*
 lerna-debug.log*
 
 # Variables de entorno (¡Crucial!)
-.env
-.env.development
-.env.production
 *.local
 
 # Testing (Opcional, pero recomendado)
